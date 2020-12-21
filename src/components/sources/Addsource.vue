@@ -1,68 +1,63 @@
 <template>
   <div>
-    <el-breadcrumb separator="/">
-      <el-breadcrumb-item :to="{ path: '/home' }">首页</el-breadcrumb-item>
-      <el-breadcrumb-item>课件资源管理</el-breadcrumb-item>
-      <el-breadcrumb-item>资源管理/资源管理新增 </el-breadcrumb-item>
-
-    </el-breadcrumb>
-
     <el-card>
       <el-button type="primary" @click="outputsource" size="mini">返回</el-button>
       <el-form :model="addform" :rules="addFormRules" ref="addFormRef"
                label-width="70px"
                class="addformclas"
-              >
+      >
 
-            <el-form-item label="标题:" prop="title" label-width="115px">
-              <el-input v-model="addform.title" size="mini" class="smal"></el-input>
-            </el-form-item>
+        <el-form-item label="标题:" prop="title" label-width="115px">
+          <el-input v-model="addform.title" size="mini" class="smal"></el-input>
+        </el-form-item>
 
 
-            <el-form-item label="类型:"
-                          prop="type"
-                          label-width="115px"
-            >
-              <select v-model="addform.type" :onchange="typechange(addform.type)">
-                <option disabled value="">请选择</option>
-                <option value="0">
-                  文本文件
-                </option>
-                <option value="1">
-                 视频文件
-                </option>
-              </select>
-            </el-form-item>
-          <el-form-item label="模块:" prop="module" label-width="115px">
-            <select v-model="addform.module">
-              <option disabled value="">请选择</option>
-              <option value="0">
-                426电源车
-              </option>
-              <option value="1">
-                30电源车
-              </option>
-            </select>
-          </el-form-item>
-            <el-form-item label="作者:" prop="author" label-width="115px">
-              <el-input v-model="addform.author" size="mini" class="smal"></el-input>
-            </el-form-item>
-            <el-form-item label="内容:" prop="content" label-width="115px">
-             <quill-editor
-               v-model="addform.content"
-             ></quill-editor>
-            </el-form-item>
-        <el-form-item label="上传封面图:" prop="fengmianpic" label-width="115px">
+        <el-form-item label="类型:"
+                      prop="type"
+                      label-width="115px"
+        >
+          <select v-model="addform.type" class="change1">
+            <option disabled value="">请选择</option>
+            <option value="0">
+              文本文件
+            </option>
+            <option value="1">
+              视频文件
+            </option>
+          </select>
+        </el-form-item>
+
+
+        <el-form-item label="科目:" prop="subject" label-width="115px">
+          <select v-model="addform.subjectId">
+            <option disabled value="">请选择</option>
+            <option :value="item.id" v-for="(item,index) in subjectarr">
+              {{item.lable}}
+            </option>
+          </select>
+        </el-form-item>
+        <el-form-item label="作者:" prop="author" label-width="115px">
+          <el-input v-model="addform.author" size="mini" class="smal"></el-input>
+        </el-form-item>
+        <el-form-item label="内容:" prop="contents" label-width="115px">
+          <quill-editor
+            :options="editorOption"
+            v-model="addform.contents"
+            class="fuwenben"
+          ></quill-editor>
+        </el-form-item>
+        <el-form-item label="上传封面图:" prop="coverPicArr" label-width="115px">
           <el-upload
-            action="http://192.168.1.15:8002/api/Home/uploads"
+            :file-list="covericarr"
+            :action="actionFM"
             list-type="picture-card"
             :on-preview="handlePictureCardPreview"
             accept=".png,.jpeg,.jpg"
             :on-remove="handleRemove2"
             :on-success="avatorsuccess"
             :limit="1"
-             name="files"
-          id="slj">
+            name="files"
+            id="slj">
             <i class="el-icon-plus"></i>
           </el-upload>
           <el-dialog :visible.sync="dialogVisible">
@@ -71,11 +66,12 @@
         </el-form-item>
 
 
-<!--        上传文件-->
-        <el-form-item label="上传文件:" prop="upload" label-width="115px" v-if="wenben">
+        <!--        上传文件-->
+        <el-form-item label="上传源文件:" prop="upload" label-width="115px" v-if="wenben">
 
           <el-upload
-            action="http://192.168.1.15:8002/api/Home/uploadoffice"
+            :file-list="filearr"
+            :action="actionYWJ"
             :on-success="handlesuccess"
             :on-preview="handlePreview"
             :on-remove="handleRemove"
@@ -83,7 +79,7 @@
             list-type="text"
             multiple
             ref="upload"
-            accept=".xls,.xlsx,.png,.jpeg,.jpg,.rar,.zip,.doc,.docx,.pdf"
+            accept=".xls,.xlsx,.rar,.zip,.doc,.docx,.pdf"
             name="files"
           >
             <el-button size="small" type="primary">点击上传</el-button>
@@ -91,14 +87,15 @@
             <div slot="tip" class="el-upload__tip">（2）单文件不能超过100M</div>
           </el-upload>
         </el-form-item>
-<!--上传视频-->
+        <!--上传视频-->
         <el-form-item label="上传视频:" prop="upload" label-width="115px" v-if="!wenben">
 
           <el-upload
-            action="http://192.168.1.15:8002/api/Home/uploads"
-            :on-success="handlesuccess"
+            :file-list="filearryulan"
+            :action="actionUrl"
+            :on-success="handlesuccessyulan"
             :on-preview="handlePreview"
-            :on-remove="handleRemove"
+            :on-remove="handleRemoveyulan"
             :before-upload="beforeUpload"
             list-type="text"
             multiple
@@ -112,10 +109,32 @@
           </el-upload>
         </el-form-item>
 
-       <el-row type="flex" justify="end">
-         <el-button @click="" size="mini">取 消</el-button>
-         <el-button type="primary" @click="addUser" size="mini">确 定</el-button>
-       </el-row>
+
+        <el-form-item label="上传预览文件:" prop="upload" label-width="115px" v-if="wenben">
+
+          <el-upload
+            :file-list="filearryulan"
+            :action="actionUrl"
+            :on-success="handlesuccessyulan"
+            :on-preview="handlePreviewyulan"
+            :on-remove="handleRemoveyulan"
+            :before-upload="beforeUpload"
+            list-type="text"
+            multiple
+            ref="upload"
+            accept=".pdf,.jpeg,.png,.jpg"
+            name="files"
+          >
+            <el-button size="small" type="primary">点击上传</el-button>
+            <div slot="tip" class="el-upload__tip">（1）支持文件上传格式:.pdf,.jpeg,.jpg,.png</div>
+            <div slot="tip" class="el-upload__tip">（2）单文件不能超过100M</div>
+          </el-upload>
+        </el-form-item>
+
+        <el-row type="flex" justify="end">
+          <el-button @click="quxiao" size="mini">取 消</el-button>
+          <el-button type="primary" @click.prevent="addUser" size="mini">确 定</el-button>
+        </el-row>
 
 
       </el-form>
@@ -132,24 +151,26 @@
     >
 
       <img :src="fileData" alt="" v-show="fileType === 'pic'" class="diacontent">
-<!--      pdf预览-->
+      <!--     pdf预览-->
       <embed :src="fileData" type="application/pdf" class="diapdf"
              v-show="fileType === 'pdf'">
+      <video v-show="fileType === 'video'" controls="controls" width="100%"
+             :src="fileData" type="video/mp4">
+        <!--        <source :src="fileData" type="video/mp4">-->
+      </video>
+      <div v-show="fileType==='otherstype'">
+        如需在线预览,请上传.pdf格式文件
+      </div>
 
-      <iframe
-        :src="'//www.xdocin.com/xdoc?_func=to&_format=html&_cache=1&_xdoc='+fileData"
-        width="100%"
-        height="100%" />
 
 
 
+      <!--      <div class="pdf" v-show="fileType === 'pdf'">-->
+      <!--        <pdf :src="fileDta" ></pdf>-->
+      <!--      </div>-->
+      <!--      <a href="fileData"></a>-->
 
-<!--      <div class="pdf" v-show="fileType === 'pdf'">-->
-<!--        <pdf :src="fileDta" ></pdf>-->
-<!--      </div>-->
-<!--      <a href="fileData"></a>-->
-
-<!--      <embed :src="fileData" type="application/pdf" width="100%" height="100%">-->
+      <!--      <embed :src="fileData" type="application/pdf" width="100%" height="100%">-->
 
     </el-dialog>
 
@@ -159,30 +180,73 @@
   </div>
 </template>
 <script>
+  //自定义字体类型
+  var fonts = ['Microsoft-YaHei',
+    'SimSun', 'SimHei',
+    'KaiTi','Arial',
+    'Times-New-Roman'];
+  var Font = Quill.import("formats/font");
+  Font.whitelist = fonts; //将字体加入到白名单
+  Quill.register(Font, true);
 
   export default {
     data(){
       var checkType=(rule,value,callback)=>{
+        // console.log(this.addform.type)
         if(this.addform.type==''){
+
           return callback(new Error('请选择类型'));
         }
 
         return callback()
       }
       var checkModule=(rule,value,callback)=>{
-        if(this.addform.module==''){
-          return callback(new Error('请选择模块'));
+        if(this.addform.subject==''){
+          return callback(new Error('请选择科目'));
         }
 
         return callback()
       }
       return{
+        editorOption:{
+          modules:{
+            toolbar:[
+              ['bold', 'italic', 'underline', 'strike'],    //加粗，斜体，下划线，删除线
+              ['blockquote', 'code-block'],     //引用，代码块
+
+
+              [{ 'header': 1 }, { 'header': 2 }],        // 标题，键值对的形式；1、2表示字体大小
+              [{ 'list': 'ordered'}, { 'list': 'bullet' }],     //列表
+              [{ 'script': 'sub'}, { 'script': 'super' }],   // 上下标
+              [{ 'indent': '-1'}, { 'indent': '+1' }],     // 缩进
+              [{ 'direction': 'rtl' }],             // 文本方向
+
+              //字体大小
+              [{ 'size': ['12px', '14px', '16px' ,'18px', '22px', '26px', '30px', '36px', '42px'] }],
+              [{ 'header': [1, 2, 3, 4, 5, 6, false] }],     //几级标题
+
+
+              [{ 'color': [] }, { 'background': [] }],     // 字体颜色，字体背景颜色
+              [{ 'font': fonts}],     //字体
+              [{ 'align': [] }],    //对齐方式
+
+
+              ['clean'],    //清除字体样式
+              ['image','video']    //上传图片、上传视频
+
+            ],
+            imageResize:{} // 配置图片可缩放大小
+          }
+        },
         getRowKeys(row) {
           return row.id
         },
         moduleProps:{
 
         },
+        actionYWJ:'',
+        actionUrl:'',
+        subjectarr:[],
         wenben:true,
         fileType:'',
         subjectProps:{
@@ -275,21 +339,28 @@
         datepicker2:'',
         addform:{
           //   //文件的数组
-          pics:[],
-          files:[],
-          videos:[],
-          content:'',
-          type:'',
-          module:'',
+          coverPicArr:[],
+          viewFileArr:[],
+          sourceFileArr:[],
+          contents:'',
+          type:'0',
+          subjectId:'',
           title:'',
           author:''
+          // openstatus:'2'
 
         },
+        actionFM:'',
+
         modeldata:'',
         levelmodel:[],
         editform:{
           id:''
         },
+        covericarr:[],
+        filearr:[],
+        filearryulan:[],
+        videoarr:[],
         passwordform:{
           password1:'',
           password2:''
@@ -297,9 +368,11 @@
         userinfo:{
 
         },
+        isqueding:false,
         subectteacher:'',
         checkList1:[],
         upload:"",
+
         dialogImageUrl:'',
         createdTime:'',
         //添加表单的验证规则
@@ -309,9 +382,9 @@
           ],
           type:[
             //文件类型选择
-          {required:true,validator:checkType}
+            // {required:true,validator:checkType}
           ],
-          module:[
+          subject:[
             {required:true,validator:checkModule}
           ]
 
@@ -322,11 +395,63 @@
 
         },
         selectedroleid:'',
-        sourceid:''
+        sourceid:'',
+        order:''
 
 
 
       }
+    },
+    created() {
+      this.base=this.BASE_URL
+      this.base2=this.base_url
+      //视频接口  预览文件接口
+      this.actionUrl=this.base+'/api/Home/uploadView'
+      //封面图接口
+      this.actionFM=this.base+'/api/Home/uploads'
+
+      //  源文件接口
+      this.actionYWJ=this.base+'/api/Home/uploadsource'
+      //  获取所有科目
+      this.getsubjectList()
+    },
+    mounted() {
+      const order=this.$route.query.item
+
+      if(order){
+        this.order=order
+        this.getsourcelist(this.order)
+      }
+      const that=this
+      const select1=document.querySelector(".change1")
+
+      select1.onchange=function(){
+        console.log('变了select')
+        console.log(that.addform.type)
+        if(that.addform.type=='0'){
+          that.wenben=true
+          that.addform.sourceFileArr=[]
+          that.addform.viewFileArr=[]
+          that.filearr=[]
+          that.filearryulan=[]
+
+
+          // that.$refs.upload11.clearFiles()
+        }else if(that.addform.type=='1'){
+          that.wenben=false
+          that.addform.sourceFileArr=[]
+          that.addform.viewFileArr=[]
+          that.filearr=[]
+          that.filearryulan=[]
+
+
+        }else{
+
+        }
+
+      }
+
+
     },
     computed:{
       //定义一个对象
@@ -349,10 +474,9 @@
           }
         },
         deep:true
-
       },
       "sels":function(newval) {
-        // console.log('监控')
+
         if(newval.length==1){
           this.isedit=false
         }else{
@@ -365,8 +489,24 @@
         }
       },
       datepicker:function(val) {
-        // console.log(val)
       },
+      "addform.type":function(val) {
+        if(this.isqueding==false){
+          // console.log(val)
+          // console.log('数据变')
+
+          if(val=='0'){
+            this.wenben=true
+            // this.$refs.upload.clearFiles()
+          }else if(val=='1'){
+            this.wenben=false
+            // this.$refs.upload.clearFiles()
+          }else{
+
+          }
+        }
+
+      }
 
       // "addform.type":function(val) {
       //   console.log('文本/视频')
@@ -386,33 +526,89 @@
 
     },
     methods:{
+      getsubjectList(){
+        this.$http.get(`${this.base}/api/Subject/getAllSubject`).then(res=>{
+          console.log('返回列表')
+          console.log(res.data)
+          this.subjectarr=res.data[0].children
+
+        }).catch(res=>{
+          console.log('获取科目失败')
+        })
+      },
+      quxiao(){
+        this.$router.push('/sourcemn')
+
+      },
+      getsourcelist(id){
+        this.$http.get(`${this.base}/api/Resource/getResource/${id}`).then(res=>{
+          console.log('编辑返回')
+          console.log(res.data)
+          this.addform=res.data
+
+          //封面图设置
+          let pictururl=res.data.coverPicArr
+          pictururl.forEach((item)=>{
+            let obj=new Object()
+            obj.url=this.base2+'/'+item
+
+            this.covericarr.push(obj)
+          })
+          let fileurl=res.data.sourceFileArr
+          if(fileurl==[]){
+            //  如果是空文件返回
+            this.filearr=[]
+          }else{
+            this.addform.sourceFileArr=res.data.sourceFileArr
+            console.log('编辑获取的sourceFileArr')
+            console.log(this.addform.sourceFileArr)
+            fileurl.forEach((item)=>{
+              let obj1=new Object()
+              obj1.url=this.base2+'/'+item
+              obj1.name=item.split("\\")[1]
+              this.filearr.push(obj1)
+
+            })
+          }
+
+          let fileyulanarr=res.data.viewFileArr
+          if(fileyulanarr==[]){
+            //  如果是空文件返回
+            this.filearryulan=[]
+          }else{
+            this.addform.viewFileArr=res.data.viewFileArr
+            fileyulanarr.forEach((item)=>{
+              let obj2=new Object()
+              obj2.url=this.base2+'/'+item
+              obj2.name=item.split("\\")[1]
+              this.filearryulan.push(obj2)
+
+            })
+            console.log('现在的file预览数组')
+            console.log(this.filearryulan)
+          }
+
+
+        })
+      },
       typechange(val){
-       if(val=='0'){
-         this.wenben=true
-         this.addform.videos=[]
-         this.$refs.upload.clearFiles()
-       }else if(val=='1'){
-         this.wenben=false
-         this.addform.files=[]
-         this.$refs.upload.clearFiles()
-       }
+
       },
       handleRemove2(file){
-        this.addform.pics=[]
-        console.log(this.addform.pics)
+        this.addform.coverPicArr=[]
+        console.log(this.addform.coverPicArr)
       },
       avatorsuccess(res){
-         this.addform.pics.push(res)
+        console.log(res)
+        this.addform.coverPicArr.push(res)
       },
       handlePictureCardPreview(file){
-        console.log('头像路径')
-        console.log(file.url)
-      // 头像预览
+        // 头像预览
         this.dialogImageUrl = file.url;
         this.dialogVisible = true;
       },
       outputsource(){
-     this.$router.go(-1)
+        this.$router.go(-1)
       },
 
       modulechge(val){
@@ -448,7 +644,7 @@
       },
       openstates(){
         //批量启用
-        this.$http.post('api/Teacher/updateStates/true',this.sels).then(res=>{
+        this.$http.post(`${this.base}/api/Teacher/updateStates/true`,this.sels).then(res=>{
 
           if(res.data=='Ok'){
             this.$message.success('批量启动成功')
@@ -468,7 +664,7 @@
       },
       piliangdelete(){
         //  点击了批量删除
-        this.$http.post('api/course/delcourses/',this.sels).then(res=>{
+        this.$http.post(`${this.base}/api/course/delcourses/`,this.sels).then(res=>{
           console.log('批量删除返回')
           console.log(res.data)
           if(res.data=='OK'){
@@ -485,7 +681,7 @@
       },
       piliangpush(){
         //  批量发布
-        this.$http.post('api/course/delcourses/',this.sels).then(res=>{
+        this.$http.post(`${this.base}/api/course/delcourses/`,this.sels).then(res=>{
           console.log('批量发布返回')
           console.log(res.data)
           if(res.data=='OK'){
@@ -520,7 +716,7 @@
             this.$message.error('请检查密码格式!')
             return
           }
-          this.$http.post('api/User/updatePassword',{
+          this.$http.post(`${this.base}/api/User/updatePassword`,{
             id:this.editform.id,
             password:this.passwordform.password2
           }).then(res=>{
@@ -539,36 +735,68 @@
 
       },
       addUser(){
-        this.$router.push('/sourcemn')
-        return
+        this.isqueding=true
         //点击确定按钮预校验
         this.$refs.addFormRef.validate(async valid=>{
           console.log(valid)
           if(!valid){
             return
           }
-
+          console.log('科目id')
+          console.log(this.addform.subjectId)
           //添加性别 1/0
-          // this.addform.sex=Number(this.addform.sex)
-          this.$http.post('api/Teacher/addTeacher',this.addform).then(res=>{
+          this.addform.type=Number(this.addform.type)
+          this.addform.subjectId=Number(this.addform.subjectId)
+          //资源开放性
+          this.addform.openstatus=Number(this.addform.subject)
+          if(this.order){
+            //是编辑页面过来的
+            this.addform.id=this.order
+            this.$http.post(`${this.base}/api/Resource/updateInfo`,this.addform).then(res=>{
 
-            //新增返回
-            console.log('新增返回')
-            console.log(res.data)
+              //新增返回
+              console.log('编辑返回')
+              console.log(res.data)
 
-            if(res.data=="OK"){
+              if(res.data=="Ok"){
 
-              this.$message.success('添加成功')
-              // this.addialogvisible=false
+                this.$message.success('编辑成功')
+                this.$router.push('/sourcemn')
+
+              }else{
+
+                this.$message.error(res.data)
+              }
+            }).catch(res=>{
+            })
+          }else{
+            //是新增页面过来的
+            this.$http.post(`${this.base}/api/Resource/addResource`,this.addform).then(res=>{
+
+              //新增返回
+              console.log('新增返回')
+              console.log(res.data)
+
+              if(res.data=="OK"){
+
+                this.$message.success('添加成功')
+                this.$router.push('/sourcemn')
+
+              }else{
+                console.log('走了else')
+                this.$message.error(res.data)
+              }
+            }).catch(res=>{
+            })
+          }
+          // this.filearr=[]
+          // this.addform.viewFileArr=[]
+          // this.addform.sourceFileArr=[]
+          // this.$refs.upload.clearFiles()
+          // this.$refs.upload11.clearFiles()
 
 
 
-            }else{
-              console.log('走了else')
-              this.$message.error(res.data)
-            }
-          }).catch(res=>{
-          })
 
 
         })
@@ -587,7 +815,7 @@
       showeditdialog(id){
         //编辑信息页面展示
         this.editform1.id=id
-        this.$http.get(`api/Teacher/getTeacher/${id}`).then(res=>{
+        this.$http.get(`${this.base}/api/Teacher/getTeacher/${id}`).then(res=>{
           console.log('获取单个信息')
           console.log(res.data)
           //赋值文件数组
@@ -644,7 +872,7 @@
           console.log('我给的editform')
           console.log(this.editform1)
           // console.log(this.checkList2)
-          this.$http.post('api/Teacher/updateInfo',this.editform1).then(res=>{
+          this.$http.post(`${this.base}/api/Teacher/updateInfo`,this.editform1).then(res=>{
             if(res.data=="Ok"){
               this.$message.success('修改成功')
               this.editalogvisible=false
@@ -672,7 +900,7 @@
           //  如果用户确认了删除  返回的是confirm字符串
           //如果用户取消了删除  返回的是cancel字符串
         }).then(() => {
-          this.$http.get(`api/Teacher/delTeacher/${id}`).then(
+          this.$http.get(`${this.base}/api/Teacher/delTeacher/${id}`).then(
             res=>{
               if(res.data=="OK"){
                 this.$message.success('删除成功')
@@ -696,7 +924,7 @@
           cancelButtonText:'取消',
           type:'warning'
         }).then(()=>{
-            this.$http.post('api/user/delusers',this.sels).then(res=>{
+            this.$http.post(`${this.base}/api/user/delusers`,this.sels).then(res=>{
               console.log('删除成功 ')
               //重置空数组
               this.sels=[]
@@ -719,54 +947,15 @@
 
         )
       },
-      async setrole(info){
-        this.setrolelogvisible=true
-        //获取所有角色列表
-        const {data:res}=await this.$http.get('roles')
-        if(res.meta.status!=200){
-          return this.$message.error('获取角色列表失败')
-        }
-        this.roleslist=res.data
-        this.userinfo=info
 
-      },
-      //点击按钮分配角色
-      async saveroleinfo(){
-        //判断选择没选择
-        if(!this.selectedroleid){
-          return this.$message.error('请选择要分配的角色')
-        }
-        // console.log(this.userinfo.id);
-        // console.log(this.selectedroleid)
-        const {data:res}= await this.$http.put(`users/${this.userinfo.id}/role`,{
-          rid:this.selectedroleid
-        })
-        if(res.meta.status!=200){
 
-          return this.$message.error('更新角色失败')
-        }
-
-        this.setrolelogvisible=false
-
-      },
       setroledialog(){
         this.selectedroleid=""
         this.userinfo={
 
         }
       },
-      async getsmallUserlist(){
-        // 查询框函数
-        const {data:res}=await this.$http.get('queryusers',{params:this.queryInfo2})
-        // console.log(res)
-        if(res.meta.status!=200){
-          return this.$message.error('未查询到该用户')
-        }
-        this.userlist=res.data
-        this.total=res.total
 
-
-      },
       resetquery(){
         //重置按钮事件
         this.queryInfo.value1=''
@@ -806,44 +995,150 @@
         //  上传文件成功
         console.log('上传成功')
         console.log(res)
-        this.addform.files.push(res)
+        this.addform.sourceFileArr.push(res)
+        console.log('现在的sourceFileArr')
+        console.log(this.addform.sourceFileArr)
 
+      },
+      handlesuccessyulan(res){
+        console.log('上传预览文件成功')
+        console.log(res)
+        this.addform.viewFileArr.push(res)
       },
       handlesuccess2(res,file,filelist){
 
         this.editform1.pics.push(res)
       },
-      handleRemove(file){
-        //从数组中移除
-        const index=this.addform.pics.findIndex(item=>{
-          item==file
+      handleRemoveyulan(file){
+        console.log('移除预览')
+        const index=this.addform.viewFileArr.findIndex(item=>{
+
+          if(file.response){
+            return file.response==item
+          }else{
+            const viewindex=file.url.indexOf('view')
+            const fdd=file.url.substr(viewindex)
+            return item==fdd
+          }
+
         })
-        this.addform.pics.splice(index,1)
-        // console.log('现在的')
-        // console.log(this.addform.pics)
+        console.log('删除的')
+        console.log(index)
+        this.addform.viewFileArr.splice(index,1)
+        console.log('现在的viewFileArr')
+        console.log(this.addform.viewFileArr)
+      },
+      handleRemove(file){
+        console.log('移除了、。')
+        console.log(file)
+        //从数组中移除
+        const index=this.addform.sourceFileArr.findIndex(item=>{
+
+          if(file.response){
+            console.log("fileresponse----"+file.response)
+            console.log("item----"+item)
+            return file.response==item
+          }else{
+            const sourceindex=file.url.indexOf('source')
+            const fdd=file.url.substr(sourceindex)
+            console.log('这里')
+            console.log(fdd)
+            return item==fdd
+          }
+
+        })
+        console.log('删除的')
+        console.log(index)
+        this.addform.sourceFileArr.splice(index,1)
+        console.log('现在的sourceFileArr')
+        console.log(this.addform.sourceFileArr)
 
       },
       beforeUpload(file){
-        const isLt100M = file.size / 1024 / 1024 <100;
+        const isLt100M = file.size / 1024 / 1024 <99;
+
         if (!isLt100M) {
+
           this.$message.error('上传文件大小不能超过100M!');
         }
         return isLt100M
       },
-      handlePreview(file){
-       console.log('预览的文件')
-       console.log(file)
-        // this.fileType='pdf'
-        this.fileData="http://192.168.1.15:8003/"+file.response
+      handlePreviewyulan(file){
+        console.log('预览文件预览')
+        console.log(file)
+        const filename=file.name
+        const docindex=filename.indexOf(".")
+        const newstr=filename.substr(docindex)
+        if(file.response){
+          if(newstr=='.pdf'){
+            this.fileType='pdf'
+            // console.log('预览pdf')
+
+            this.fileData=this.base2+'/'+file.response
+            // console.log(this.fileData)
+          }else if(newstr=='.jpg'||newstr=='.png'||newstr==".jpeg"){
+            this.fileData=this.base2+'/'+file.response
+            this.fileType='pic'
+          }
+        }else{
+          if(newstr=='.pdf'){
+            this.fileType='pdf'
+            this.fileData=file.url
+          }else if(newstr=='.jpg'||newstr=='.png'||newstr==".jpeg"){
+            this.fileData=file.url
+            this.fileType='pic'
+          }
+        }
+
+
         this.addialogvisible=true
-     if(file.raw.type=="image/jpeg"||file.raw.type=="image/jpg"||file.raw.type=="image/png"){
-           this.fileType='pic'
-     }else if(file.raw.type=="application/pdf"){
-       this.fileType='pdf'
-     }else if(file.raw.type=="application/msword"){
-       console.log('是word')
-       this.fileType='word'
-     }
+      },
+      handlePreview(file){
+        console.log('源文件预览')
+        console.log(file)
+        const filename=file.name
+        const docindex=filename.indexOf(".")
+        const newstr=filename.substr(docindex)
+        console.log(newstr)
+        if(file.response){
+          //  如果有raw  是直接上传的预览
+          if(newstr=='.pdf'){
+            this.fileType='pdf'
+            this.fileData=this.base2+'/'+file.response
+          }else if(newstr=='.jpg'||newstr=='.png'||newstr==".jpeg"){
+            this.fileData=this.base2+'/'+file.response
+            this.fileType='pic'
+          }else if(newstr==".mp4"){
+            console.log('是video')
+            this.fileData=this.base2+'/'+file.response
+            this.fileType='video'
+          }else{
+            //  其他类型
+            console.log('其他类型')
+            this.fileType='otherstype'
+
+          }
+
+        }else{
+          if(newstr=='.pdf'){
+            this.fileType='pdf'
+            this.fileData=file.url
+          }else if(newstr=='.jpg'||newstr=='.png'||newstr==".jpeg"){
+            this.fileData=file.url
+
+            this.fileType='pic'
+          }else if(newstr==".mp4"){
+            this.fileData=file.url
+            this.fileType='video'
+          }else{
+            //  其他类型
+            console.log('其他类型')
+            this.fileType='otherstype'
+
+          }
+        }
+
+        this.addialogvisible=true
 
 
       },
@@ -883,6 +1178,9 @@
     width: 55px;
 
   }
+  .fuwenben img{
+    width: 55px;
+  }
   .casc{
     margin-left: 15px;
   }
@@ -903,6 +1201,7 @@
   }
   .diacontent{
     width: 80%;
+    max-width:550px;
   }
   .diq{
     text-align: center;

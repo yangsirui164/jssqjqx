@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="mingh1">
     <el-breadcrumb separator="/">
       <el-breadcrumb-item :to="{ path: '/home' }">首页</el-breadcrumb-item>
       <el-breadcrumb-item>安全管理</el-breadcrumb-item>
@@ -10,19 +10,23 @@
 
       <el-row :gutter="20">
         <el-col :span="9">
-          <span>角色名称:</span>
-          <el-input placeholder="请输入" v-model="queryInfo.value1" class="widinput">
+          <span class="smallspan">角色名称:</span>
+          <el-input placeholder="请输入" v-model="queryInfo.value1" class="widinput"
+          size="mini">
           </el-input>
         </el-col>
         <el-col :span="7">
-          <el-button type="primary" @click="chaxun">查询</el-button>
-          <el-button type="info" @click="resetrole">重置</el-button>
+          <el-button type="primary" @click="chaxun" size="mini">查询</el-button>
+          <el-button type="info" @click="resetrole" size="mini">重置</el-button>
         </el-col>
       </el-row>
       <el-row>
         <el-col class="actionel">
-          <el-button type="primary" @click="addialogvisible=true">新增</el-button>
-          <el-button type="info" @click="removeroles()" :disabled="this.sels.length === 0">批量删除</el-button>
+          <el-button type="primary" @click="addialogvisible=true"
+          size="mini">新增</el-button>
+          <el-button type="info" @click="removeroles()" :disabled="this.sels.length === 0"
+          size="mini">批量删除</el-button>
+<!--          <el-button @click="showepowerdialog()">授权</el-button>-->
         </el-col>
       </el-row>
 
@@ -30,12 +34,13 @@
       <el-table :data="rollList" border stripe
       @selection-change="handleSelectionChange"
       :row-key="getRowKeys"
+       ref="buyerTable"
       >
         <el-table-column type="selection"  reserve-selection></el-table-column>
       <el-table-column type="index" label="序号">
         <template slot-scope="scope"><span>{{scope.$index+(queryInfo.pagenum-1)*queryInfo.pagesize+1}}</span></template>
       </el-table-column>
-      <el-table-column label="角色名称" prop="roleName"></el-table-column>
+      <el-table-column label="角色名称" prop="roleName" ></el-table-column>
         <el-table-column label="角色编号" prop="roleCode"></el-table-column>
         <el-table-column label="创建时间" prop="registerDate" width="170px"></el-table-column>
         <el-table-column label="备注" prop="remark" width="190px"></el-table-column>
@@ -54,32 +59,13 @@
         @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
         :current-page="queryInfo.pagenum"
-        :page-sizes="[1, 2, 5, 10]"
+        :page-sizes="[10,15,20]"
         :page-size="queryInfo.pagesize"
         layout="total,sizes, prev, pager, next, jumper"
         :total="total">
       </el-pagination>
     </el-card>
 
-<!-- 分配权限 -->
-    <el-dialog @close="setRightcosed"
-
-      title="分配权限"
-      :visible.sync="setRightDialogVisible"
-      width="50%"
-
-    >
-<!--      树形控件-->
-      <el-tree :data="rightsist" :props="treeProps"  show-checkbox
-      node-key="id"  default-expand-all  :default-checked-keys="defkeys"
-               ref="treeref"
-      ></el-tree>
-
-      <span slot="footer" class="dialog-footer">
-    <el-button @click="dialogVisible = false">取 消</el-button>
-    <el-button type="primary" @click="allotRights">确 定</el-button>
-  </span>
-    </el-dialog>
 <!--  新增角色对话框-->
     <el-dialog
       title="新增角色"
@@ -103,7 +89,7 @@
     </el-dialog>
 <!--编辑对话框-->
     <el-dialog
-      title="编辑用户"
+      title="编辑角色"
       :visible.sync="editalogvisible"
       width="30%"
       @close="editdialogclosed"
@@ -123,16 +109,47 @@
     <el-button type="primary" @click="editUserInfo">确 定</el-button>
   </span>
     </el-dialog>
+
+    <el-dialog
+      title="角色授权选择"
+      :visible.sync="setpowervisible"
+      width="60%"
+      @close="setroledialog"
+    >
+<!--      <div class="diazog">-->
+
+        <el-tree
+        :data="tree_data"
+        :props="defaultProps"
+       default-expand-all
+       ref="tree"
+       node-key="id"
+       show-checkbox
+      :default-checked-keys="defaulechecked"
+    >
+         </el-tree>
+      <span slot="footer" class="dialog-footer">
+    <el-button @click="setpowervisible = false">取 消</el-button>
+    <el-button type="primary" @click="saveuserpower">确 定</el-button>
+  </span>
+    </el-dialog>
   </div>
 </template>
 <script>
 export default{
 data(){
   return{
+    defaulechecked:[],
+    defaultProps:{
+      children:'children',
+      label:'lable'
+
+    },
     editform1:{
       roleName:'',
       remark:''
     },
+    iszha:false,
     editformrules:{
       roleName:[
 
@@ -141,6 +158,11 @@ data(){
 
       ]
     },
+    checkedarr:[],
+    defaultkeys1:[],
+    defaultkeys2:[],
+    tree_data:[],
+    tree_data2:[],
     editalogvisible:false,
     sels:[],
     addFormRules:{
@@ -164,7 +186,7 @@ data(){
       //当前页码值
       pagenum:1,
       //每页显示条数
-      pagesize:2
+      pagesize:10
     },
     editform:{
       id:''
@@ -175,19 +197,61 @@ data(){
     rightsist:[],
     //树形控件属性绑定
     treeProps:{
-        label:'authName',
+      label:'authName',
       children:'children'
     },
     //默认选中的节点id
     defkeys:[],
     //即将分配权限的角色id
-    roId:''
+    roId:'',
+    setpowervisible:false,
+    transferData:[],
+    shouquanid:'',
+    transferarr:[],
+    value4:[],
+    data11: [{
+      label: '一级 1',
+      children: [{
+        label: '二级 1-1',
+        haha:'丽丽',
+        children: [{
+          label: '三级 1-1-1'
+        }]
+      }]
+    }, {
+      label: '一级 2',
+      children: [{
+        label: '二级 2-1',
+        children: [{
+          label: '三级 2-1-1'
+        }]
+      }, {
+        label: '二级 2-2',
+        children: [{
+          label: '三级 2-2-1'
+        }]
+      }]
+    }, {
+      label: '一级 3',
+      children: [{
+        label: '二级 3-1',
+        children: [{
+          label: '三级 3-1-1'
+        }]
+      }, {
+        label: '二级 3-2',
+        children: [{
+          label: '三级 3-2-1'
+        }]
+      }]
+    }],
 
   }
 },
 
   created() {
   this.getRoleList()
+    const arr=[1,1,1,1]
   },
   watch:{
     "queryInfo.value1":function(newval){
@@ -197,9 +261,52 @@ data(){
     }
   },
   methods:{
+
+    hanChtransfer(value, direction, movedKeys){
+      console.log('穿梭change')
+      console.log(value)
+      this.transferarr=value
+    },
+    setroledialog(){
+      this.defaulechecked=[]
+      this.selectedroleid=""
+      this.userinfo={
+
+      }
+    },
+
+    disabledfn(data, node){
+      console.log('.........')
+      console.log(data)
+      console.log(node)
+      if(this.iszha&&data.father==1){
+           return true
+      }else{
+        return false
+      }
+
+    },
+    saveuserpower(){
+      const keys=this.$refs.tree.getCheckedKeys()
+      console.log('现在的keys')
+      console.log(keys)
+      this.$http.post(`api/Role/updatePermission/${this.shouquanid}`,keys).then(res=>{
+
+        console.log('更新授权返回')
+        console.log(res.data)
+        if(res.data=='Ok'){
+          this.$message.success('角色授权成功')
+          this.getRoleList()
+          this.setpowervisible=false
+        }else{
+          this.$message.error('角色授权失败')
+          this.setpowervisible=false
+        }
+      })
+    },
     editUserInfo(){
     //确定编辑
-     this.$http.post('',{
+     this.$http.post('api/Role/updateInfo',{
        id:this.editform.id,
        roleName:this.editform1.roleName,
        remark:this.editform1.remark
@@ -224,11 +331,31 @@ data(){
     },
     editdialogclosed(){
     //  编辑对框框关闭
+      this.$refs.editformref.resetFields()
+    },
+    showepowerdialog(id){
+      this.shouquanid=id
+      this.transferData=[]
+      this.value4=[]
+      // this.defaulechecked=[]
+      //  显示授权页面
+      this.$http.get(`api/Permission/getAllMenuByRole/${id}`).then(res=>{
+        console.log('授权返回')
+        console.log(res.data)
+        const childata=res.data.children
+        this.tree_data=childata
+        this.getleafkeys(res.data,this.defaulechecked)
+        console.log('现在被选中的')
+        console.log(this.defaulechecked)
+      }).catch(res=>{
+
+      })
+      this.setpowervisible=true
+
+
 
     },
-    showepowerdialog(){
-    //  角色授权
-    },
+
     getRowKeys(row) {
       return row.id
     },
@@ -236,11 +363,11 @@ data(){
       this.editform.id=id
     //  角色编辑
       this.$http.get(`api/Role/getRole/${id}`).then(res=>{
-        this.editform1.roleName=res.data.roleName
+        this.editform1=res.data
         this.editalogvisible=true
       }).catch(res=>{
         console.log('获取原数据失败')
-        // this.$message.error('获取原数据失败')
+
       })
     },
     removeUserbyid(id){
@@ -293,7 +420,7 @@ data(){
     },
     removeroles(){
     //  批量删除角色
-    this.$confirm('将要批量删除用户，是否继续？','提示',{
+    this.$confirm('将要批量删除角色，是否继续？','提示',{
       confirmButtonText:'确定',
       cancelButtonText:'取消',
       type:'warning'
@@ -346,29 +473,19 @@ data(){
     //  直接更新数据
       row.children=res.data
     },
-    async showsetRightDialog(row){
-   this.roId=row.id
-      console.log(this.roId)
-      // console.log(row)
-      const {data:res}=await this.$http.get('rights/tree')
-      if(res.meta.status!==200){
-        return this.$message.error('获取权限数据失败')
-
-      }
-      this.rightsist=res.data
-      this.getleafkeys(row,this.defkeys)
-      this.setRightDialogVisible=true
-
-    },
   //  递归函数获取所有三级节点id,保存到数组中
     getleafkeys(node,arr){
     //  判断是否为三级节点
-      if(!node.children){
-        return arr.push(node.id)
+      if(node.children==null){
+        if(node.isChecked==true){
+           return arr.push(node.id)
+        }
+      }else{
+        node.children.forEach(item=>{
+          this.getleafkeys(item,arr)
+        })
       }
-      node.children.forEach(item=>{
-        this.getleafkeys(item,arr)
-      })
+
 
 
     },
@@ -376,33 +493,17 @@ data(){
     //  监听对话框关闭
       this.defkeys=[]
     },
-    async allotRights(){
-
-    //  点击确定，为角色分配权限
-      const keys=[
-        this.$refs.treeref.getCheckedKeys(),
-        this.$refs.treeref.getHalfCheckedKeys()
-
-      ]
-
-     const idstr=keys.join(',')
-     const {data:res}=await this.$http.post(`roles/${this.roId}/rights`,{rids:idstr})
-      if(res.meta.status!==200){
-        return this.$message.error('添加权限失败')
-
-      }
-      this.$message.success( '添加权限成功')
-      this.getRoleList()
-      this.setRightDialogVisible=false
-
-
+    clearSelection(){
+      //  取消所有的选择
+      this.$refs.buyerTable.clearSelection()
     },
     resetrole(){
     //  重置按钮事件
       this.queryInfo.value1=''
       this.queryInfo.pagenum=1
       this.getRoleList()
-
+      this.sels=[]
+      this.clearSelection()
     }
   }
 }
@@ -435,5 +536,21 @@ data(){
   color: blue;
   cursor: pointer;
 }
-
+.el-checkbox__label{
+  font-size: 12px !important;
+}
+  .diazuo{
+   float: left;
+    width: 42%;
+  }
+  .diayou{
+    float: right;
+    width: 42%;
+  }
+  .diazog{
+    overflow: hidden;
+  }
+  .mingh1{
+    min-width: 800px;
+  }
 </style>

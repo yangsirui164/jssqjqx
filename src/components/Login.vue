@@ -1,29 +1,35 @@
 <template>
   <div class="login_container">
    <div class="login_box">
-       <div class="avatar_box">
-         <img src="../assets/logo.png" alt="">
-       </div>
+         <img src="/static/loginbk2.png" alt="" class="loginbk2">
+         <div class="posi">
+           <!--登录表单区域-->
+           <el-form ref="loginFormRef" class="login_form" :model="LoginForm" :rules="LoginFormRules">
+             <el-form-item  prop="loginname">
+               <el-input prefix-icon="iconfont icon-icon_User" v-model="LoginForm.loginname"
+               placeholder="请输入用户名"
+               class="login_input2"></el-input>
+             </el-form-item>
+             <el-form-item prop="password">
+               <el-input prefix-icon="iconfont icon-mima" v-model="LoginForm.password"
+                         type="password" placeholder="请输入密码"
+               class="login_input2"></el-input>
+             </el-form-item>
+             <el-row class="btns">
+               <input type="checkbox" id="checkbox" v-model="checked"
+              >
+               <label for="checkbox" class="remen">记住密码</label>
+               <button @click.prevent="login"
+                @mouseover="haha='elbtnwhite'"
+               @mouseout="haha='elbtnblue'"
+               :class="haha">立即登录</button>
+
+             </el-row>
+           </el-form>
+         </div>
 
 
 
-<!--登录表单区域-->
-     <el-form label-width="80px" ref="loginFormRef" class="login_form" :model="LoginForm" :rules="LoginFormRules">
-     <el-form-item label="用户名" prop="loginname">
-       <el-input prefix-icon="iconfont icon-user" v-model="LoginForm.loginname"></el-input>
-     </el-form-item>
-
-       <el-form-item label="密码" prop="password">
-         <el-input prefix-icon="iconfont icon-3702mima" v-model="LoginForm.password"
-      type="password"></el-input>
-       </el-form-item>
-
-
-       <el-form-item class="btns">
-         <el-button type="primary" @click="login">登录</el-button>
-         <el-button type="info" @click="resetLofinForm">重置</el-button>
-       </el-form-item>
-     </el-form>
 
 
 
@@ -34,17 +40,19 @@
   export default {
    data(){
      return{
+       checked:false,
        //表单登录信息对象
        LoginForm:{
-         loginName:'admin',
-         password:'12345678'
+         loginname:'',
+         password:''
        },
+       base:'',
+       haha:'elbtnblue',
        menudata:[],
        //表单验证规则对象
        LoginFormRules:{
          loginname:[
-           { required: true, message: '请输入登录名称 ', trigger: 'blur' },
-           { min: 3, max:10, message: '长度在 3 到 10 个字符', trigger: 'blur' }
+           { required: true, message: '请输入登录名称 ', trigger: 'blur' }
          ],
          password:[
            { required: true, message: '请输入登录密码 ', trigger: 'blur' },
@@ -54,33 +62,59 @@
      }
    },
     created(){
-      // this.$http.get('/api/user/getalluser').then(res=>{
-      //   console.log(res)
-      // },res=>{
-      //   console.log('失败')
-      // })
+      this.base=this.BASE_URL
+   const localloginname=window.localStorage.getItem('loginName')
+    const localpwd=window.localStorage.getItem('password')
+      if(localloginname&&localpwd){
+        this.LoginForm.loginname=localloginname
+        this.LoginForm.password=localpwd
+      }
 
     },
     methods:{
-
      //重置登录表单函数
       resetLofinForm(){
        //重置验证
        this.$refs.loginFormRef.resetFields()
      },
-      login(){
 
+      login(){
        //预校验
        this.$refs.loginFormRef.validate(valid=>{
             //参数预校验的结果
             // console.log(valid)
          if(!valid)  return;
-         this.$http.post("api/user/login",this.LoginForm).then(res=>{
+
+         this.$http.post(`${this.base}/api/user/login`,this.LoginForm).then(res=>{
            console.log("菜单数据")
-           if(res.data.result=="OK"){
+           console.log(res.data)
+
+           if(res.data.result=="Ok"){
              const loginid=res.data.data.id
+
              console.log(loginid)
+             //是否记住密码
+               if(this.checked){
+
+                   window.localStorage.setItem("password",this.LoginForm.password)
+               }else if(!this.checked){
+                 window.localStorage.removeItem("password")
+               }
+             window.localStorage.setItem("loginName",this.LoginForm.loginname)
              window.sessionStorage.setItem('loginid',loginid)
+        if(res.data.type=='0'){
+          console.log('是0啊')
+          window.sessionStorage.setItem("type",'0')
+          this.$router.push('/home')
+        }else if(res.data.type=='1'){
+
+          window.sessionStorage.setItem("type",'1')
+          this.$router.push('/first')
+        }
+
+
+
+
 
            }else{
              this.$message.error('登录信息错误')
@@ -90,15 +124,10 @@
            // console.log(this.$root.hub)
            // this.menudata=res.data
            //  this.$root.hub.$emit('tom-event',res.data)
-
-         }).catch(res=>{
-           console.log('登录失败')
+           // this.$router.push('/home')
          })
-         this.$message.success('登录成功')
 
-         // window.sessionStorage.setItem('token',res.data.token)
-       //通过编程式导航跳转到后台主页,  路由地址是home
-         this.$router.push('/home')
+
 
 
 
@@ -108,60 +137,70 @@
   }
 </script>
 <style lang="less" scoped>
+
 .login_container{
-  background-color:#2b4b6b;
+ background: url("/static/loginbk.png");
+  width: 100%;
   height: 100%;
+  /*background-position: center;*/
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+   display: flex;
+  align-items: center;
+  justify-content: center;
+  /*min-width: 950px;*/
 }
-  .login_box{
-    width: 450px;
-    height:300px;
-    background-color: #fff;
-    border-radius:3px;
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%,-50%);
-
-
-    .avatar_box{
-      width: 130px;
-      height: 130px;
-      border: 1px solid #eee;
-      border-radius:50%;
-      padding: 10px;
-      box-shadow: 0 0 10px #ddd;
-      position: absolute;
-      /*left: 50%;*/
-      /*transform: translate(-50%,-50%);*/
-      background-color: #fff;
-      /*transition: all 1s;*/
-      left:244px;
-      top: -284px;
-      animation: fly 2s linear;
-      -webkit-animation:fly 1.3s linear;
-      -moz-animation:fly 1.3s linear;
-      -o-animation:fly 1.3s linear;
-      animation-fill-mode: forwards;
-      /*transform-style: preserve-3d;*/
-      /*perspective: 400px;*/
-      img{
-        width: 100%;
-        border-radius: 50%;
-        background-color: #eee;
-      }
-
-    }
+@font-face {
+  font-family: "zaozi";
+  src:url("../assets/fonts/zaozi.otf");
+}
+.posi{
+  width: 80%;
+  height: 100%;
+  /*margin: 300px auto 0;*/
+  margin: 0 auto;
+  padding: 40px 10px 0;
+  box-sizing: border-box;
+}
+  .login_box {
+    width: 540px;
+    height: 600px;
+    position: relative;
+    box-sizing: border-box;
+    padding-top: 300px;
 
   }
-  .login_form{
+  .bigp{
+    font-family:"zaozi";
+    color: rgb(17,120,207);
+    font-size: 30px;
+    margin-top: 30px;
+    margin-bottom: 15px;
+  }
+  .loginbk2{
+    width: 100%;
+    height: 100%;
     position: absolute;
-    bottom:0;
-    width: 80%;
+    top:0;
+    left: 0;
+  }
+
+  .login_form{
+    width: 100%;
     box-sizing: border-box;
   }
   .btns{
     display: flex;
-    justify-content:flex-end;
+    align-items: center;
+    overflow: hidden;
+
+  input{
+    width: 30px;
+    height: 30px;
+
+
+  }
+    /*justify-content:flex-end;*/
   }
   @keyframes fly {
     0%{
@@ -175,5 +214,67 @@
     40%{left:-195px;top:-15px}
     100%{left:0px;top:200px;transform:scale(1.5)}
   }
+.login_input2{
+  width: 100%;
 
+}
+  .elbtnblue{
+    width:200px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgb(48, 61, 111);
+    color: white;
+    border: none;
+    float: right;
+    margin-left: auto;
+    border-radius: 3px;
+    cursor: pointer;
+    outline: none;
+    transition: background-color .3s;
+
+  }
+  .remen{
+    color: black;
+    font-size: 18px;
+    margin-left: 10px;
+
+  }
+  .elbtnwhite{
+    width:200px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(48, 61, 111,.7);
+    color: white;
+    border: none;
+    float: right;
+    margin-left: auto;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: background-color .3s;
+    outline: none;
+  }
+  @media only screen and  (max-width:865px){
+     .login_box{
+       width: 480px;
+       height: 550px;
+     }
+    .bigp{
+      font-size: 18px;
+    }
+    .elbtnblue{
+      width:200px;
+      height: 35px;
+      font-size: 8px;
+    }
+    .elbtnwhite{
+      width:200px;
+      height: 35px;
+      font-size: 8px;
+    }
+
+  }
 </style>

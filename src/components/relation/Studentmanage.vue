@@ -1,24 +1,18 @@
 <template>
-  <div>
-    <el-breadcrumb separator="/">
-      <el-breadcrumb-item :to="{ path: '/home' }">首页</el-breadcrumb-item>
-      <el-breadcrumb-item>学员/教师管理</el-breadcrumb-item>
-      <el-breadcrumb-item>学员管理</el-breadcrumb-item>
-
-    </el-breadcrumb>
+  <div class="mingh1">
     <el-card>
       <el-row :gutter="21">
-        <el-col :span="8">
+        <el-col :span="6">
           <!--  clearable可清空-->
-          <span>姓名:</span>
+          <span class="smallspan">姓名:</span>
           <el-input placeholder="请输入" v-model="queryInfo.value1"
                     class="singleel_input"
                     size="mini"
                     clearable></el-input>
 
         </el-col>
-        <el-col :span="8">
-          <span>班级:</span>
+        <el-col :span="6">
+          <span class="smallspan">班级:</span>
           <el-cascader
             placeholder="请选择"
             v-model="cascadervalue"
@@ -26,6 +20,7 @@
             @change="handleChange"
             size="mini"
             :props="defaultProps"
+            class="singleel_input"
           ></el-cascader>
         </el-col>
         <el-col :span="8">
@@ -39,7 +34,8 @@
       </el-row>
       <el-row class="actionel">
         <el-button type="primary" @click="addialogvisible=true"
-                   size="mini">新增</el-button>
+                   size="mini" style="margin-left: 10px">新增</el-button>
+
         <el-cascader
           class="casc"
           placeholder="快速操作"
@@ -47,12 +43,9 @@
           :options="options2"
           @change="handleChange2"
           size="mini"
-          :disabled="iskuaisu"
         ></el-cascader>
       </el-row>
 
-
-      </el-table>
       <!--          用户table-->
       <el-table
         border
@@ -104,15 +97,15 @@
         >
         </el-table-column>
         <el-table-column
-          prop="score"
+          prop="scoreTxt"
           label="学生评估"
           width="55px"
         >
-<!--          <template slot-scope="scope">-->
-<!--            <span v-if="scope.row.level==''">优</span>-->
-<!--            <span v-if="scope.row.level==''">良</span>-->
-<!--            <span v-if="scope.row.level==''">及格</span>-->
-<!--          </template>-->
+          <!--          <template slot-scope="scope">-->
+          <!--            <span v-if="scope.row.level==''">优</span>-->
+          <!--            <span v-if="scope.row.level==''">良</span>-->
+          <!--            <span v-if="scope.row.level==''">及格</span>-->
+          <!--          </template>-->
         </el-table-column>
         <el-table-column
           prop="remark"
@@ -150,7 +143,7 @@
         @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
         :current-page="queryInfo.pagenum"
-        :page-sizes="[1, 2, 5, 10]"
+        :page-sizes="[10,15,20]"
         :page-size="queryInfo.pagesize"
         layout="total,sizes, prev, pager, next, jumper"
         :total="total">
@@ -164,31 +157,33 @@
       :visible.sync="addialogvisible"
       width="40%"
       @close="addialogclose"
+
     >
       <el-form :model="addform" :rules="addFormRules" ref="addFormRef"
                label-width="70px"
                class="addformclas">
-            <el-form-item label="姓名:" prop="realName"  label-width="95px" class="gh">
-              <el-input v-model="addform.realName" size="mini" placeholder="请输入"></el-input>
-            </el-form-item>
-          <el-form-item label="学号:" prop="studentCode"  label-width="95px" class="gh">
-            <el-input v-model="addform.studentCode" size="mini" placeholder="请输入"></el-input>
-          </el-form-item>
-            <el-form-item label="班级:" prop="grade"  label-width="95px">
-              <el-cascader
-                placeholder="请选择"
-                v-model="grademodel"
-                :options="options"
-                @change="handg3"
-                size="mini"
-                :props="defaultProps"
-              ></el-cascader>
+        <el-form-item label="姓名:" prop="realName"  label-width="95px" >
+          <el-input v-model="addform.realName" size="mini" placeholder="请输入" class="gh"></el-input>
+        </el-form-item>
+        <el-form-item label="学号:" prop="studentCode"  label-width="95px" >
+          <el-input v-model="addform.studentCode" size="mini" placeholder="请输入" class="gh"></el-input>
+        </el-form-item>
+        <el-form-item label="班级:" prop="grade"  label-width="95px">
+          <el-cascader
+            placeholder="请选择"
+            v-model="grademodel"
+            :options="options"
+            @change="handg3"
+            size="mini"
+            :props="defaultProps"
+            class="xueyuan"
+          ></el-cascader>
 
-            </el-form-item>
-           <el-form-item label="性别:"
+        </el-form-item>
+        <el-form-item label="性别:"
                       label-width="95px"
                       prop="sex"
-            >
+        >
           <select v-model="addform.sex">
             <option disabled value="">请选择</option>
             <option value="0">男</option>
@@ -196,7 +191,7 @@
           </select>
         </el-form-item>
         <el-form-item label="联系电话:" prop="phone" label-width="95px">
-          <el-input v-model="addform.phone" size="mini"></el-input>
+          <el-input v-model="addform.phone" size="mini" class="gh"></el-input>
         </el-form-item>
         <el-form-item label="籍贯:" prop="nativeArr" label-width="95px">
           <el-cascader
@@ -211,11 +206,11 @@
         </el-form-item>
 
         <el-form-item label="邮箱:" label-width="95px" prop="email">
-          <el-input v-model="addform.email" size="mini" placeholder="请输入"></el-input>
+          <el-input v-model="addform.email" size="mini" placeholder="请输入" class="gh"></el-input>
         </el-form-item>
 
         <el-form-item label="备注:" prop="remark" label-width="95px">
-      <el-input v-model="addform.remark" placeholder="请输入" size="mini"></el-input>
+          <el-input v-model="addform.remark" placeholder="请输入" size="mini"></el-input>
         </el-form-item>
 
 
@@ -244,7 +239,7 @@
           <el-input v-model="editform1.realName" size="mini" placeholder="请输入"></el-input>
         </el-form-item>
         <el-form-item label="学号:" prop="studentCode"  label-width="95px" class="gh">
-          <el-input v-model="editform1.studentCode" size="mini" placeholder="请输入"></el-input>
+          <el-input v-model="editform1.studentCode" size="mini" placeholder="请输入" :disabled="true"></el-input>
         </el-form-item>
         <el-form-item label="班级:" prop="gradeId"  label-width="95px">
           <el-cascader
@@ -342,12 +337,7 @@
 
         return callback()
       }
-      var oncePassword=(rule,value,callback)=>{
-        if(this.passwordform.password2!=''){
-          this.$refs.passwordformref.validateField('password2');
-        }
-        return callback()
-      }
+
       var checkPassword=(rule,value,callback)=>{
         if(value==''){
           return callback(new Error('请再次输入密码'));
@@ -389,24 +379,18 @@
         }
 
       }
-      var checkPersonCode=(rule,value,callback)=>{
-        const Regpersoncode=/^[1-9][0-9]{5}([1][9][0-9]{2}|[2][0][0|1][0-9])([0][1-9]|[1][0|1|2])([0][1-9]|[1|2][0-9]|[3][0|1])[0-9]{3}([0-9]|[X])$/;
-        if(Regpersoncode.test(value)){
-          return callback()
-        }
-        return callback(new Error('请输入合法身份证号码'))
-      }
+
       return{
         getRowKeys(row) {
           return row.id
         },
+        ischange:false,
         subjectProps:{
           label:'lable',
           value:'id',
           //可以多选
           multiple: true
         },
-        iskuaisu:true,
         defaultProps:{
           label:'name',
           value:'id'
@@ -441,20 +425,15 @@
           },
           {
             value:'3',
-            label:'批量导入'
-          },
-          {
-            value:'4',
-            label: '批量导出'
+            label: '导出表格'
           }
 
         ],
         options:[],
         cascadervalue2:[],
         cascadervalue:[],
-        hahhaha:'',//修改密码
         passworddiavisible:false,
-        setpowervisible:false,
+
         sels: [],//选中的值显示
         //  获取用户列表的参数
         queryInfo:{
@@ -464,7 +443,7 @@
           //当前页码值
           pagenum:1,
           //每页显示条数
-          pagesize:2
+          pagesize:10
         },
         queryInfo2:{
           username:'',
@@ -513,7 +492,16 @@
           // teacherCode:'',
           phone:'',
           // idCode:'',
-          sex:""
+          sex:"",
+          studentCode:'',
+          nativeArr:[],
+          remark:'',
+          email:'',
+          gradeId:0
+
+
+
+
         },
         levelmodel:[],
         editform:{
@@ -533,7 +521,7 @@
         passwordformrules:{
           password1:[
             {required:true,message:'请输入修改密码',trigger:'blur'},
-            {min:3,max:9,message:'长度在3到9之间',trigger:'blur'},
+            {min:6,max:15,message:'长度在6到15之间',trigger:'blur'},
             // {validator:oncePassword,trigger:'blur'}
           ],
           password2:[
@@ -561,7 +549,7 @@
             {required:true,validator:checkSex,trigger:'blur'}
           ],
           grade:[
-          //  班级选择
+            //  班级选择
           ],
           email:[
             {validator:checkEmail,trigger:'blur'}
@@ -1170,14 +1158,14 @@
           label:'areaName',
           children:'child'
         },
-        jiguan2:''
-
-
+        jiguan2:'',
+        base:''
       }
     },
     computed:{
       //定义一个对象
       bothvalue(){
+
         const {value1,value2}=this.queryInfo
         return{
           value1,
@@ -1205,11 +1193,7 @@
         }else{
           this.isedit=true
         }
-        if(newval.length==0){
-          this.iskuaisu=true
-        }else{
-          this.iskuaisu=false
-        }
+
       },
       datepicker:function(val) {
         // console.log(val)
@@ -1217,25 +1201,27 @@
 
     },
     created() {
+      this.base=this.BASE_URL
       //分页查询
       this.getUserlist()
-      //  获取所有科目
+      //  获取所有班级
       this.getClassList()
-      // this.getsubjectList()
+
     },
     methods:{
+
       handg4(val){
-     this.editform1.gradeId=val[0]
+        this.editform1.gradeId=val[0]
       },
       jiguanchange(val){
         //新增的籍贯
         this.addform.nativeArr=val
       },
       jiguanchange2(val){
-      //籍贯选择
+        //籍贯选择
       },
       handg3(val){
-       this.addform.gradeId=val[0]
+        this.addform.gradeId=val[0]
       },
 
       handleChange(val){
@@ -1244,56 +1230,86 @@
         this.queryInfo.value2=val[0]
       },
       handleChange2(val){
-        const warningarr=["删除","启用","停用","导入","导出"]
+        const  choiceval=val[0]
+        const warningarr=["删除","启用","停用"]
         //下拉框
         const warningtext=warningarr[val]
-        this.$confirm(`将要批量${warningtext},是否继续？`,'提示',{
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        }).then(
-          res=>{
-            if(val=='0'){
-              //点击了批量删除
-              this.piliangdelete()
-            }else if(val=='1'){
-              //点击了批量启动
-
-              this.openstates()
-            }else if(val=='2'){
-              //点击了批量停用
-              this.closestates()
-            }else if(val=='3'){
-              this.daoru()
-            }else if(val=='4'){
-              console.log('选择导出')
-              this.daochu()
+        if(choiceval=='0'||choiceval=='1'||choiceval=='2'){
+          if(this.sels.length==0){
+            this.cascadervalue2=[]
+            this.$message.warning(`请选择要${warningtext}的对象`)
+            return
+          }
+          this.$confirm(`将要批量${warningtext}学员,是否继续？`,'提示',{
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }).then(
+            res=>{
+              if(choiceval=='0'){
+                //点击了批量删除
+                this.piliangdelete()
+                this.cascadervalue2=''
+              }else if(choiceval=='1'){
+                //点击了批量启动
+                this.openstates()
+                this.cascadervalue2=''
+              }else if(choiceval=='2'){
+                //点击了批量停用
+                this.closestates()
+                this.cascadervalue2=''
+              }
+              // this.cascadervalue2=''
             }
-            this.cascadervalue2=''
-          }
-        ).catch(
-          res=>{
-            this.sels=[]
-            this.clearSelection()
-            this.cascadervalue=''
-            this.$message.warning(`已取消批量${warningtext}`)
-          }
-        )
+          ).catch(
+            res=>{
+              this.sels=[]
+              this.clearSelection()
+              this.cascadervalue2=''
+              // this.$message.warning(`已取消批量${warningtext}`)
+            }
+          )
+        }
+
+        if(choiceval=='3'){
+          this.queryInfo.pagenum=1
+          this.queryInfo.pagesize=this.total
+          this.getUserlist()
+          //批量导出
+          const that=this
+          setTimeout(function() {
+            that.daochu()
+          },1000)
+          this.cascadervalue2=''
+        }
+
+
       },
       daochu(){
-      // 批量导出
+        // 批量导出
         /* generate workbook object from table */
-        let wb = XLSX.utils.table_to_book(document.querySelector(
-          '.studenttable'));
-        let wbout = XLSX.write(wb, { bookType: 'xlsx', bookSST: true, type: 'array' });
-        try {
-          FileSaver.saveAs(new Blob([wbout], { type: 'application/octet-stream' }), '学员信息表.xlsx');
-        } catch (e)
-        {
-          if (typeof console !== 'undefined')
-            console.log(e, wbout)
-        }
-        return wbout
+        // let wb = XLSX.utils.table_to_book(document.querySelector(
+        //   '.studenttable'));
+        // let wbout = XLSX.write(wb, { bookType: 'xlsx', bookSST: true, type: 'array' });
+        // try {
+        //   FileSaver.saveAs(new Blob([wbout], { type: 'application/octet-stream' }), '学员信息表.xlsx');
+        // } catch (e)
+        // {
+        //   if (typeof console !== 'undefined')
+        //     console.log(e, wbout)
+        // }
+        // return wbout
+        require.ensure([], () => {
+          const { export_json_to_excel } = require('../../vendor/Export2Excel');
+          const tHeader = ['姓名','学号','班级','联系电话','学生评估'];            // 对应表格输出的title
+          const filterVal = ['realName','studentCode','gradeTxt','phone','remark'];                             // 对应表格输出的数据
+          const list = this.userlist;
+          const data = this.formatJson(filterVal, list);
+          export_json_to_excel(tHeader, data, '学员信息表');                   //对应下载文件的名字
+        })
+      },
+      formatJson(filterVal, jsonData) {
+        return jsonData.map(v => filterVal.map(j => v[j]))
       },
       subtechge(val){
         this.checkList1=[]
@@ -1306,7 +1322,7 @@
       },
       openstates(){
         //批量启用
-        this.$http.post('api/Student/updateStates/true',this.sels).then(res=>{
+        this.$http.post(`${this.base}/api/Student/updateStates/true`,this.sels).then(res=>{
 
           if(res.data=='Ok'){
             this.$message.success('批量启动成功')
@@ -1326,7 +1342,7 @@
       },
       piliangdelete(){
         //  点击了批量删除
-        this.$http.post('api/Student/delStudents/',this.sels).then(res=>{
+        this.$http.post(`${this.base}/api/Student/delStudents/`,this.sels).then(res=>{
           console.log('批量删除返回')
           console.log(res.data)
           if(res.data=='OK'){
@@ -1343,7 +1359,7 @@
       },
       closestates(){
         //批量停用
-        this.$http.post('api/Student/updateStates/false',this.sels).then(res=>{
+        this.$http.post(`${this.base}/api/Student/updateStates/false`,this.sels).then(res=>{
 
           if(res.data=='Ok'){
             this.$message.success('批量停用成功')
@@ -1358,7 +1374,7 @@
         this.clearSelection()
       },
       getClassList(){
-        this.$http.get('api/Grade/getAllGrade').then(res=>{
+        this.$http.get(`${this.base}/api/Grade/getAllGrade`).then(res=>{
           console.log('获取所有班级')
           console.log(res.data)
           this.options=res.data
@@ -1368,12 +1384,12 @@
       },
       chaxun(){
         this.queryInfo.pagenum=1
-       this.getUserlist()
+        this.getUserlist()
       },
       getUserlist(){
         // console.log('我给的')
         // console.log(this.queryInfo)
-        this.$http.post('api/Student/getStudentByPage',this.queryInfo).then(res=>{
+        this.$http.post(`${this.base}/api/Student/getStudentByPage`,this.queryInfo).then(res=>{
           console.log('获取table信息')
           console.log(res.data)
           this.userlist=res.data.data
@@ -1398,15 +1414,7 @@
         this.queryInfo.pagenum=val
         this.getUserlist()
       },
-      async userstatuschanged(changgestate){
-        //修改后传递数据   用put请求
-        const {data:res}=await this.$http.put(`users/${changgestate.id}/state/${changgestate.mg_state}`)
-        if(res.meta.status!==200){
-          changgestate.mg_state=!changgestate.mg_state
-          return this.$message.error('更新用户状态失败')
-        }
 
-      },
       //添加对话框关闭事件
       addialogclose(){
         this.$refs.addFormRef.resetFields()
@@ -1422,7 +1430,7 @@
             this.$message.error('请检查密码格式!')
             return
           }
-          this.$http.post('api/User/updatePassword',{
+          this.$http.post(`${this.base}/api/User/updatePassword`,{
             id:this.editform.id,
             password:this.passwordform.password2
           }).then(res=>{
@@ -1447,12 +1455,11 @@
           if(!valid){
             return
           }
-
           //添加性别 1/0
           this.addform.sex=Number(this.addform.sex)
-          this.$http.post('api/Student/addStudent',this.addform).then(res=>{
-
+          this.$http.post(`${this.base}/api/Student/addStudent`,this.addform).then(res=>{
             //新增返回
+            console.log('新增学员返回')
             console.log(res.data)
             if(res.data=="OK"){
               this.$message.success('添加成功')
@@ -1469,7 +1476,7 @@
       showeditdialog(id){
         //编辑信息页面展示
         this.editform1.id=id
-        this.$http.get(`api/Student/getStudent/${id}`).then(res=>{
+        this.$http.get(`${this.base}/api/Student/getStudent/${id}`).then(res=>{
           console.log('获取单个信息')
           console.log(res.data)
           //2020/3/15 0:00:00
@@ -1498,7 +1505,7 @@
           if(!valid){
             return
           }
-          this.$http.post('api/Student/updateInfo',this.editform1).then(res=>{
+          this.$http.post(`${this.base}/api/Student/updateInfo`,this.editform1).then(res=>{
             if(res.data=="Ok"){
               this.$message.success('修改成功')
               this.editalogvisible=false
@@ -1519,14 +1526,14 @@
       removeUserbyid(id){
         this.editform.id=id
         //返回值是一个promise
-        this.$confirm('此操作将永久删除用户, 是否继续?', '提示', {
+        this.$confirm('此操作将永久删除学员, 是否继续?', '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'warning'
           //  如果用户确认了删除  返回的是confirm字符串
           //如果用户取消了删除  返回的是cancel字符串
         }).then(() => {
-          this.$http.get(`api/Student/delStudent/${id}`).then(
+          this.$http.get(`${this.base}/api/Student/delStudent/${id}`).then(
             res=>{
               if(res.data=="OK"){
                 this.$message.success('删除成功')
@@ -1550,7 +1557,7 @@
           cancelButtonText:'取消',
           type:'warning'
         }).then(()=>{
-            this.$http.post('api/user/delusers',this.sels).then(res=>{
+            this.$http.post(`${this.base}/api/user/delusers`,this.sels).then(res=>{
               console.log('删除成功 ')
               //重置空数组
               this.sels=[]
@@ -1573,60 +1580,23 @@
 
         )
       },
-      async setrole(info){
-        this.setrolelogvisible=true
-        //获取所有角色列表
-        const {data:res}=await this.$http.get('roles')
-        if(res.meta.status!=200){
-          return this.$message.error('获取角色列表失败')
-        }
-        this.roleslist=res.data
-        this.userinfo=info
 
-      },
-      //点击按钮分配角色
-      async saveroleinfo(){
-        //判断选择没选择
-        if(!this.selectedroleid){
-          return this.$message.error('请选择要分配的角色')
-        }
-        // console.log(this.userinfo.id);
-        // console.log(this.selectedroleid)
-        const {data:res}= await this.$http.put(`users/${this.userinfo.id}/role`,{
-          rid:this.selectedroleid
-        })
-        if(res.meta.status!=200){
 
-          return this.$message.error('更新角色失败')
-        }
-        this.getUserlist()
-        this.setrolelogvisible=false
-
-      },
       setroledialog(){
         this.selectedroleid=""
         this.userinfo={
 
         }
       },
-      async getsmallUserlist(){
-        // 查询框函数
-        const {data:res}=await this.$http.get('queryusers',{params:this.queryInfo2})
-        // console.log(res)
-        if(res.meta.status!=200){
-          return this.$message.error('未查询到该用户')
-        }
-        this.userlist=res.data
-        this.total=res.total
 
-
-      },
       resetquery(){
         //重置按钮事件
         this.queryInfo.value1=''
         this.queryInfo.value2=''
         this.cascadervalue=''
         this.getUserlist()
+        this.sels=[]
+        this.clearSelection()
       },
       levelhandlechange(){
 
@@ -1677,17 +1647,19 @@
       },
       handlePreview(){
 
-      }
-
-
-
-
-
+      },
+      handleRe1(file,fileList){
+        this.fileTemp = null
+      },
     }
 
   }
 </script>
 <style lang="less" scoped>
+  .ghg{
+
+    float: left !important;
+  }
   .actionel{
     margin-top: 20px;
 
@@ -1697,7 +1669,7 @@
     cursor: pointer;
   }
   .singleel_input{
-    width:185px !important;
+    width:165px !important;
   }
   .leftdia{
     float: left;
@@ -1711,6 +1683,7 @@
     width: 55px;
 
   }
+
   .casc{
     margin-left: 15px;
   }
@@ -1718,13 +1691,16 @@
     line-height: 14px !important;
   }
   .addformclas{
-    .el-row{
-      /*margin-bottom:15px !important;*/
-    }
     .el-form-item{
       margin-bottom: 12px;
     }
 
+  }
+  .mingh1{
+    min-width: 800px;
+  }
+  .gh{
+    width: 195px !important;
   }
 
 </style>

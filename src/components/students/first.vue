@@ -59,7 +59,7 @@
 
       </div>
 
-<!--      <img src="../../assets/pcbg1.png" class="headerimg"/>-->
+
 
 
     </header>
@@ -67,7 +67,7 @@
       <div class="newsleft">
         <div class="newsleft1">
 								<span>
-									地方科协
+									通知公告
 								</span>
           <img src="../../assets/arrow.png" alt="" />
         </div>
@@ -163,15 +163,13 @@ export default {
     searchicon.onclick=function() {
     that.mainsearch(that.searchdata)
     }
-    // headerblock.onmouseover=function() {
-    // console.log(this.index)
-    //
-    // }
+
 
   },
   methods:{
     loginstudent(){
     //  登录
+      this.$router.push('/login')
     },
     mainsearch(data){
    console.log('监听')
@@ -200,6 +198,11 @@ export default {
   *{
     margin:0;
     padding: 0;
+
+  }
+  @font-face {
+    font-family: "zaozi";
+    src:url("../../assets/fonts/zaozi.otf");
   }
   header{
     width: 100%;

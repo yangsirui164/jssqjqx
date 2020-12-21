@@ -1,24 +1,18 @@
 <template>
   <div>
-    <el-breadcrumb separator="/">
-      <el-breadcrumb-item :to="{ path: '/home' }">首页</el-breadcrumb-item>
-      <el-breadcrumb-item>学员/教师管理</el-breadcrumb-item>
-      <el-breadcrumb-item>年级/班级管理</el-breadcrumb-item>
-
-    </el-breadcrumb>
     <el-card>
       <el-row :gutter="21">
         <el-col :span="8">
           <!--  clearable可清空-->
-          <span>班级:</span>
+          <span class="smallspan">班级:</span>
           <el-input placeholder="请输入" v-model="queryInfo.value1"
                     class="singleel_input"
+                    size="mini"
           ></el-input>
 
         </el-col>
         <el-col :span="8">
-          <span>所学科目:</span>
-
+          <span class="smallspan">所学科目:</span>
           <el-cascader
             placeholder="请选择"
             v-model="cascadervalue"
@@ -29,17 +23,17 @@
             :props="defaultProps"></el-cascader>
         </el-col>
         <el-col :span="8">
-          <el-button type="primary" @click="chaxun">
+          <el-button type="primary" @click="chaxun" size="mini">
             查询
           </el-button>
-          <el-button type="info" @click="resetquery">
+          <el-button type="info" @click="resetquery" size="mini">
             重置
           </el-button>
         </el-col>
       </el-row>
       <el-row class="actionel">
-        <el-button type="primary" @click="addialogvisible=true">新增班级</el-button>
-        <el-button type="info" @click="removeUsers()" :disabled="this.sels.length === 0">批量删除</el-button>
+        <el-button type="primary" @click="addialogvisible=true" size="mini">新增班级</el-button>
+        <el-button type="info" @click="removeUsers()" :disabled="this.sels.length === 0" size="mini">批量删除</el-button>
       </el-row>
       <!--          用户table-->
       <el-table
@@ -93,7 +87,7 @@
         @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
         :current-page="queryInfo.pagenum"
-        :page-sizes="[1, 2, 5, 10]"
+        :page-sizes="[10,15,20]"
         :page-size="queryInfo.pagesize"
         layout="total,sizes, prev, pager, next, jumper"
         :total="total">
@@ -114,8 +108,7 @@
             class="linput"
         ></el-input>
         </el-form-item>
-
-        <el-form-item label="所学科目:" prop="password" label-width="105px">
+        <el-form-item label="所学科目:" prop="subjectIdArr" label-width="105px">
           <el-cascader
             :options="subjectoptions"
             :props="subjectProps"
@@ -135,7 +128,7 @@
 
 
 
-    <!--编辑用户-->
+    <!--编辑班级-->
     <el-dialog
       title="编辑班级"
       :visible.sync="editalogvisible"
@@ -144,7 +137,7 @@
     >
       <el-form  :model="editform1" label-width="105px" :rules="editformrules"
                 ref="editformref">
-        <el-form-item label="班级：">
+        <el-form-item label="班级：" prop="name">
           <el-input v-model="editform1.name"
                     class="linput"
           ></el-input>
@@ -155,7 +148,7 @@
             :options="subjectoptions3"
             :props="subjectProps"
             @change="handleChange3"
-            v-model="editform1.subjectIdArr"
+            v-model="kemuarr"
             clearable></el-cascader>
         </el-form-item>
         <el-form-item label="备注" label-width="105px">
@@ -254,6 +247,7 @@
           value:'id'
 
         },
+        base:'',
         //当前有的科目
         cascadervalue3:[],
         subjectProps:{
@@ -276,6 +270,7 @@
 
 
         },
+        kemuarr:[],
         cascadervalue:[],
         cascadervalue2:[],
         hahhaha:'',//修改密码
@@ -290,7 +285,7 @@
           //当前页码值
           pagenum:1,
           //每页显示条数
-          pagesize:2
+          pagesize:10
         },
         queryInfo2:{
           username:'',
@@ -341,17 +336,10 @@
         },
         checkList1:[],
         editformrules:{
-          realName:[
-            { required: true, message: '请输入姓名', trigger: 'blur' },
-            { min: 2, max: 5, message: '长度在 2 到 5 个字符', trigger: 'blur' }
+          name:[
+            { required: true, message: '请输入班级', trigger: 'blur' }
             //自定义校验规则
             // { validator: checkEmail, trigger: 'blur' }
-          ],
-          phone:[
-            {validator:checkMobile,trigger:'blur'}
-          ],
-          email:[
-            {validator:checkEmail,trigger:'blur'}
           ]
         },
         setrolelogvisible:false,
@@ -389,7 +377,7 @@
       }
     },
     created() {
-
+      this.base=this.BASE_URL
       this.getUserlist()
       this.getsubjectList()
 
@@ -398,11 +386,7 @@
       handleChange3(val){
       //编辑选择变化
         this.checkList1=val
-        //新增班级点击所学科目
         console.log('开始选')
-        // val.forEach((item)=>{
-        //   this.checkList1.push(item[0])
-        // })
 
 
       },
@@ -412,9 +396,8 @@
         this.queryInfo.value2=val[0]
       },
       handleChange2(val){
+        console.log('change了')
         this.checkList=[]
-        //新增班级点击所学科目
-        console.log('开始选')
          val.forEach((item)=>{
         this.checkList.push(item[0])
         })
@@ -424,7 +407,7 @@
 
       },
       getsubjectList(){
-        this.$http.get('api/Subject/getAllSubject').then(res=>{
+        this.$http.get(`${this.base}/api/Subject/getAllSubject`).then(res=>{
           console.log('获取所有科目')
           // console.log(res.data)
           this.options=res.data[0].children
@@ -439,10 +422,9 @@
         this.getUserlist()
       },
       getUserlist(){
-        console.log('查询信息')
-        console.log(this.queryInfo)
-        this.$http.post('api/Grade/getGradeByPage',this.queryInfo).then(res=>{
-          console.log('班级表')
+
+        this.$http.post(`${this.base}/api/Grade/getGradeByPage`,this.queryInfo).then(res=>{
+          console.log('返回班级表')
           console.log(res.data)
           this.userlist=res.data.data
           this.total=res.data.total
@@ -464,15 +446,7 @@
         this.queryInfo.pagenum=val
         this.getUserlist()
       },
-      async userstatuschanged(changgestate){
-        //修改后传递数据   用put请求
-        const {data:res}=await this.$http.put(`users/${changgestate.id}/state/${changgestate.mg_state}`)
-        if(res.meta.status!==200){
-          changgestate.mg_state=!changgestate.mg_state
-          return this.$message.error('更新用户状态失败')
-        }
 
-      },
       //添加对话框关闭事件
       addialogclose(){
         this.$refs.addFormRef.resetFields()
@@ -486,7 +460,7 @@
             this.$message.error('请检查密码格式!')
             return
           }
-          this.$http.post('api/user/updatepassword',{
+          this.$http.post(`${this.base}/api/user/updatepassword`,{
             id:this.editform.id,
             password:this.passwordform.password2
           }).then(res=>{
@@ -512,8 +486,7 @@
             return
           }
           this.addform.subjectIdArr=this.checkList
-          this.$http.post('api/Grade/addGrade',this.addform).then(res=>{
-
+          this.$http.post(`${this.base}/api/Grade/addGrade`,this.addform).then(res=>{
             console.log(res.data)
             // console.log(this.addform)
             if(res.statusText=="OK"){
@@ -523,6 +496,8 @@
             }else{
               this.$message.error('添加失败')
             }
+
+            this.cascadervalue2=''
           }).catch(res=>{
             console.log(res)
           })
@@ -543,10 +518,13 @@
       showeditdialog(id){
         //编辑信息页面展示
         this.editform.id=id
-        this.$http.get(`api/Grade/getGrade/${id}`).then(res=>{
-          // console.log('返回的编辑信息')
-          // console.log(res.data)
+        this.$http.get(`${this.base}/api/Grade/getGrade/${id}`).then(res=>{
+          console.log('返回的编辑信息')
+          console.log(res.data)
+
           this.editform1=res.data
+          this.checkList1=res.data.subjectIdArr
+          this.kemuarr=res.data.subjectIdArr
           this.editalogvisible=true
         }).catch(res=>{
           console.log('错了')
@@ -572,30 +550,28 @@
           //编辑用户请求
           this.editform1.id=this.editform.id
           if(typeof (this.checkList1[0])!='number'){
-            console.log('不是一个数')
-            // this.checkList1=[]
             //  说明包含数组
             this.checkList1.forEach(item=>{
               this.checkList2.push(item[0])
             })
             this.editform1.subjectIdArr=this.checkList2
           }else{
-            console.log('是一个数')
+            // console.log('是一个数')
             this.editform1.subjectIdArr=this.checkList1
           }
 
-          this.$http.post('api/Grade/updateInfo',this.editform1).then(res=>{
-            console.log(res.data)
-
+          this.$http.post(`${this.base}/api/Grade/updateInfo`,this.editform1).then(res=>{
+            // console.log(res.data)
             if(res.data=="Ok"){
               this.$message.success('修改成功')
-              this.editalogvisible=false
               this.getUserlist()
+              this.editalogvisible=false
             }
 
 
           }).catch(res=>{
             console.log('修改用户数据失败')
+            this.editalogvisible=false
           })
 
 
@@ -607,14 +583,14 @@
       removeUserbyid(id){
         this.editform.id=id
         //返回值是一个promise
-        this.$confirm('此操作将永久删除用户, 是否继续?', '提示', {
+        this.$confirm('此操作将永久删除班级, 是否继续?', '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'warning'
           //  如果用户确认了删除  返回的是confirm字符串
           //如果用户取消了删除  返回的是cancel字符串
         }).then(() => {
-          this.$http.get(`/api/Grade/delGrade/${id}`).then(
+          this.$http.get(`${this.base}/api/Grade/delGrade/${id}`).then(
             res=>{
               if(res.data=="Ok"){
                 this.$message.success('删除成功')
@@ -633,12 +609,12 @@
       },
 
       removeUsers(){
-        this.$confirm('将要批量删除用户，是否继续？','提示',{
+        this.$confirm('将要批量删除班级，是否继续？','提示',{
           confirmButtonText:'确定',
           cancelButtonText:'取消',
           type:'warning'
         }).then(()=>{
-            this.$http.post('api/Grade/delGrades',this.sels).then(res=>{
+            this.$http.post(`${this.base}/api/Grade/delGrades`,this.sels).then(res=>{
               console.log('删除成功 ')
               //重置空数组
               this.sels=[]
@@ -661,55 +637,15 @@
 
         )
       },
-      async setrole(info){
-        this.setrolelogvisible=true
-        //获取所有角色列表
-        const {data:res}=await this.$http.get('roles')
-        if(res.meta.status!=200){
-          return this.$message.error('获取角色列表失败')
-        }
-        this.roleslist=res.data
-        this.userinfo=info
 
-      },
-      //点击按钮分配角色
-      async saveroleinfo(){
-        //判断选择没选择
-        if(!this.selectedroleid){
-          return this.$message.error('请选择要分配的角色')
-        }
-        // console.log(this.userinfo.id);
-        // console.log(this.selectedroleid)
-        const {data:res}= await this.$http.put(`users/${this.userinfo.id}/role`,{
-          rid:this.selectedroleid
-        })
-        if(res.meta.status!=200){
 
-          return this.$message.error('更新角色失败')
-        }
-        this.getUserlist()
-        this.setrolelogvisible=false
-
-      },
       setroledialog(){
         this.selectedroleid=""
         this.userinfo={
 
         }
       },
-      async getsmallUserlist(){
-        // 查询框函数
-        const {data:res}=await this.$http.get('query' +
-          'users',{params:this.queryInfo2})
-        // console.log(res)
-        if(res.meta.status!=200){
-          return this.$message.error('未查询到该用户')
-        }
-        this.userlist=res.data
-        this.total=res.total
 
-
-      },
       resetquery(){
         //重置按钮事件
         this.queryInfo.value1=''
@@ -717,7 +653,13 @@
         this.queryInfo.value2=''
         this.getUserlist()
         this.queryInfo.pagenum=1
+        this.sels=[]
+        this.clearSelection()
 
+      },
+      clearSelection(){
+        //  取消所有的选择
+        this.$refs.multipleTable1.clearSelection()
       },
       handleSelectionChange(val){
         // console.log('现在的选择')

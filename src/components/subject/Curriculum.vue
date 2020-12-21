@@ -1,12 +1,6 @@
 <template>
   <div @click="nullclick">
-    <el-breadcrumb separator="/">
-      <el-breadcrumb-item :to="{ path: '/home' }">首页</el-breadcrumb-item>
-      <el-breadcrumb-item>科目管理</el-breadcrumb-item>
-      <el-breadcrumb-item>课程管理</el-breadcrumb-item>
-
-    </el-breadcrumb>
-    <el-card>
+    <el-card class="bielcard">
       <div class="card_left">
         <el-input placeholder="请输入" v-model="filterText">
           <i slot="suffix" class="el-input__icon el-icon-search"></i>
@@ -18,7 +12,7 @@
           default-expand-all
           :filter-node-method="filterNode"
           @node-click="dianji"
-          ref="tree"
+          ref="tree2"
           node-key="id"
           highlight-current
           :current-node-key="parentid"
@@ -29,11 +23,11 @@
       <div class="card_right">
           <el-row>
             <el-col class="header" :span="9">
-              <span class="smalfon">课程编码:</span>
+              <span class="smallspan">课程编码:</span>
               <el-input placeholder="请输入" v-model="queryinfo.value2" clearable></el-input>
             </el-col>
             <el-col class="header" :span="9">
-              <span class="smalfon">课程名称：</span>
+              <span class="smallspan">课程名称：</span>
               <el-input placeholder="请输入" v-model="queryinfo.value3" clearable></el-input>
             </el-col>
             <el-col  :span="6">
@@ -84,7 +78,7 @@
             >
             </el-table-column>
             <el-table-column
-              prop="createUser"
+              prop="userName"
               label="创建人">
             </el-table-column>
             <el-table-column
@@ -119,15 +113,11 @@
             @size-change="handleSizeChange"
             @current-change="handleCurrentChange"
             :current-page="queryinfo.pagenum"
-            :page-sizes="[1, 2, 5, 10]"
+            :page-sizes="[10,15,20]"
             :page-size="queryinfo.pagesize"
             layout="total,sizes, prev, pager, next, jumper"
             :total="total">
           </el-pagination>
-
-
-
-
 
       </div>
 
@@ -227,7 +217,7 @@
           //当前页码值
           pagenum:1,
           //每页显示条数
-          pagesize:2
+          pagesize:10
         },
         ismenu:false,
         singleform:{
@@ -265,10 +255,11 @@
           children:'children',
           label:'lable'
         },
-        parentid:'',
+        parentid:0,
         tree_data:[],
         loginnanme:'',
         cascadervalue:[],
+        base:'',
         options:[{
           value: '0',
           label: '批量删除'
@@ -287,10 +278,10 @@
     },
     watch:{
       filterText(val){
-        this.$refs.tree.filter(val);
+        this.$refs.tree2.filter(val);
       },
       "sels":function(newval) {
-       console.log('监控')
+       // console.log('监控')
         if(newval.length==1){
           this.isedit=false
         }else{
@@ -303,7 +294,6 @@
         }
       },
       "addinfo.subjectId":function(newval){
-  console.log('这个也变了????')
         this.clearSelection()
         this.sels=[]
         if(newval==0){
@@ -332,27 +322,18 @@
     }
     },
     created(){
+      this.base=this.BASE_URL
       const struserid=window.sessionStorage.getItem('loginid')
       this.addinfo.createUser=Number(struserid)
       this.getsubjectList()
       this.getsubjectinfo()
-      this.$nextTick(function() {
-        var that=this
-        setTimeout(function() {
-          that.$refs.tree.setCurrentKey(that.parentid)
-        },1000)
 
-      })
     },
-    // mounted(){
-    //   this.$nextTick(function(){
-    //     this.$refs['tree'].setCurrentKey(0);
-    //   })
-    // },
+
     methods:{
       piliangdelete(){
       //  点击了批量删除
-        this.$http.post('api/course/delcourses/',this.sels).then(res=>{
+        this.$http.post(`${this.base}/api/course/delcourses/`,this.sels).then(res=>{
           console.log('批量删除返回')
           console.log(res.data)
           if(res.data=='OK'){
@@ -386,14 +367,15 @@
         this.queryinfo.value3=''
         this.getsubjectinfo()
         this.queryinfo.pagenum=1
-
+        this.sels=[]
+        this.clearSelection()
       },
       handleChange(val){
         const warningarr=["删除","启用","停用"]
 
       //下拉框
         const warningtext=warningarr[val]
-        this.$confirm(`将要批量${warningtext},是否继续？`,'提示',{
+        this.$confirm(`将要批量${warningtext}课程,是否继续？`,'提示',{
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'warning'
@@ -422,7 +404,7 @@
         )
       },
       editUserInfo(){
-        this.$http.post('api/Course/updateInfo',this.editform1).then(
+        this.$http.post(`${this.base}/api/Course/updateInfo`,this.editform1).then(
           res=>{
             // console.log('更新返回')
             // console.log(res.data)
@@ -450,7 +432,7 @@
       },
       openstates(){
       //批量启用
-        this.$http.post('api/course/updateStates/true',this.sels).then(res=>{
+        this.$http.post(`${this.base}/api/course/updateStates/true`,this.sels).then(res=>{
           // console.log('批量启动返回')
           // console.log(res.data)
           if(res.data=='Ok'){
@@ -468,7 +450,7 @@
       },
       closestates(){
       //批量停用
-        this.$http.post('api/course/updateStates/false',this.sels).then(res=>{
+        this.$http.post(`${this.base}/api/course/updateStates/false`,this.sels).then(res=>{
 
           if(res.data=='Ok'){
             this.$message.success('批量停用成功')
@@ -516,9 +498,9 @@
       },
       getsubjectinfo(){
         //查询表信息
-        this.$http.post(`api/Course/getCourseByPage`,this.queryinfo)
+        this.$http.post(`${this.base}/api/Course/getCourseByPage`,this.queryinfo)
           .then(res=>{
-             console.log('获取到table信息')
+             // console.log('获取到table信息')
             // console.log(res)
             this.tableData=res.data.data
             this.total=res.data.total
@@ -537,7 +519,7 @@
         // console.log(this.sels[0])
         //获取编辑信息的id
         this.editform1.subjectId=this.sels[0]
-      this.$http.get(`api/Course/getCourse/${this.sels[0]}`).then(res=>{
+      this.$http.get(`${this.base}/api/Course/getCourse/${this.sels[0]}`).then(res=>{
 
        // console.log(res.data)
         this.editform1=res.data
@@ -562,8 +544,8 @@
            if(!valid){
              return
            }
-           console.log('课程信息')
-           this.$http.post('api/Course/addCourse',this.addinfo).then(res=>{
+           // console.log('课程信息')
+           this.$http.post(`${this.base}/api/Course/addCourse`,this.addinfo).then(res=>{
              console.log('新增返回')
              console.log(res.data)
              if(res.data=="OK"){
@@ -594,17 +576,27 @@
         //  停用
       },
       getsubjectList(){
-        this.$http.get('api/Subject/getAllSubject').then(res=>{
+        this.$http.get(`${this.base}/api/Subject/getSubjectByState`).then(res=>{
           console.log('返回列表')
-          // console.log(res)
           console.log(res.data)
-          this.parentid=res.data[0].id
-          res.data[0].children.forEach((item,index)=>{
-            item.lable="【"+item.code+"】"+item.lable
-          })
+          if(res.data[0].children.length==0){
 
-          console.log(typeof res.data)
-          this.tree_data=res.data
+          }else{
+            res.data[0].children.forEach((item,index)=>{
+              item.lable="【"+item.code+"】"+item.lable
+            })
+            this.tree_data=res.data
+
+            this.$nextTick(function() {
+              var that=this
+              setTimeout(function() {
+                that.$refs.tree2.setCurrentKey(that.parentid)
+              },1000)
+
+            })
+          }
+
+
 
      }).catch(res=>{
        console.log('获取课程列表失败')
@@ -620,13 +612,13 @@
     position: relative;
   }
   .card_left{
-    width: 25%;
+    width: 20%;
     padding:0px 10px;
     float: left;
-    border-right: 2px solid gray;
+    border-right: 1px solid rgb(#EAEDF1);
   }
   .card_right {
-    width: 70%;
+    width: 75%;
     float: left;
     margin-left: 20px;
     >.el-form{
@@ -635,6 +627,7 @@
   }
   .el-card{
     overflow: hidden;
+    height: 400px;
 
   }
 
@@ -694,6 +687,10 @@
   .el-input__inner{
     height: 30px;
     line-height:  30px;
+  }
+  .bielcard{
+    height: 100%;
+    padding-bottom: 50px;
   }
 
 </style>

@@ -1,16 +1,14 @@
 <template>
 <div @click="nullclick">
-  <el-breadcrumb separator="/">
-    <el-breadcrumb-item :to="{ path: '/home' }">首页</el-breadcrumb-item>
-    <el-breadcrumb-item>科目管理</el-breadcrumb-item>
-    <el-breadcrumb-item>科目管理</el-breadcrumb-item>
 
-  </el-breadcrumb>
   <el-card>
     <div class="card_left">
      <el-input placeholder="请输入" v-model="filterText" :disabled="isedit">
        <i slot="suffix" class="el-input__icon el-icon-search"></i>
      </el-input>
+      <el-button v-if="nosubject" size="mini" @click="addsamelevel" class="addbtn">
+        新增科目
+      </el-button>
       <el-tree
         class="filter-tree"
         :data="tree_data"
@@ -43,14 +41,14 @@
         <el-form-item label="科目编码:" prop="subjectCode" label-width="90px">
           <el-input v-model="subjectform.subjectCode" :disabled="!isedit" clearable></el-input>
         </el-form-item>
-        <el-form-item label="路径:" prop="subjectPath" label-width="90px">
-          <el-input v-model="subjectform.subjectPath" :disabled="!isedit" clearable></el-input>
-        </el-form-item>
+<!--        <el-form-item label="路径:" prop="subjectPath" label-width="90px">-->
+<!--          <el-input v-model="subjectform.subjectPath" :disabled="!isedit" clearable></el-input>-->
+<!--        </el-form-item>-->
 
         <el-form-item label="状态:"  label-width="90px" class="statusinpu">
 <!--          <el-input disabled>{{subjectform.status}}</el-input>-->
-          <span v-if="subjectform.subjectState===true">在用</span>
-          <span v-else-if="subjectform.subjectState===false">停用</span>
+          <span v-if="subjectform.subjectState===true" style="color: green">在用</span>
+          <span v-else-if="subjectform.subjectState===false" style="color:red ">停用</span>
         </el-form-item>
 
         <el-form-item label="说明" prop="remark" label-width="90px">
@@ -82,6 +80,14 @@
       <el-form-item label="科目编码" prop="subjectCode">
         <el-input v-model="addinfo.subjectCode"></el-input>
       </el-form-item>
+
+<!--      <el-form-item label="路径" prop="subjectPath">-->
+<!--      <el-input v-model="addinfo.subjectPath"></el-input>-->
+<!--    </el-form-item>-->
+
+      <el-form-item label="说明" prop="remark">
+        <el-input v-model="addinfo.remark"></el-input>
+      </el-form-item>
     </el-form>
     <span slot="footer" class="dialog-footer">
     <el-button @click="addsamedialogclosed">取 消</el-button>
@@ -98,8 +104,12 @@ export default{
       //取消  保存按钮
       isbutton:false,
       addinfo:{
-
+        subjectName:'',
+        subjectCode:'',
+        subjectPath:'',
+        remark:''
       },
+      nosubject:true,
       addsamedialogvisible:false,
       menuonclickinfo:{
 
@@ -109,22 +119,21 @@ export default{
       },
       ismenu:false,
       subjectform:{
-        // subjectState:1,
-        // subjectName:'啊哈哈哈',
-        // subjectCode:'1111',
-        // subjectPath:'bdjkb',
-        // remark:'1'
-
+        subjectPath:''
       },
+      xinzeng:false,
       addsamerules:{
         subjectName:[
           { required: true, message: '请输入科目名称', trigger: 'blur' },
           { min: 2, max: 9, message: '长度在 2 到 9 个字符', trigger: 'blur' }
         ],
         subjectCode:[
-          { required: true, message: '请输入科目名称', trigger: 'blur' },
+          { required: true, message: '请输入科目编码', trigger: 'blur' },
           { min: 2, max: 9, message: '长度在 2 到 9 个字符', trigger: 'blur' }
-        ]
+        ],
+        // subjectPath:[
+        //   { required: true, message: '请输入路径', trigger: 'blur' }
+        // ]
       },
       editformrules:{
         subjectName:[
@@ -150,20 +159,15 @@ export default{
         children:'children',
         label:'lable'
       },
-      tree_data:[]
+      tree_data:[],
+      base:''
 
     }
   },
   created() {
+    this.base=this.BASE_URL
     this.getsubjectList()
     this.getsubjectinfo()
-    this.$nextTick(function() {
-      var that=this
-      setTimeout(function() {
-        that.$refs.tree.setCurrentKey(that.parentid)
-      },1000)
-
-    })
   },
 
   watch:{
@@ -174,17 +178,32 @@ export default{
   },
   methods:{
     getsubjectList(){
-      this.$http.get('api/Subject/getAllSubject').then(res=>{
-        console.log('返回列表')
-        // console.log(res)
+      this.$http.get(`${this.base}/api/Subject/getAllSubject`).then(res=>{
+        console.log('返回科目列表')
         console.log(res.data)
-       this.parentid=res.data[0].children[0].id
-        res.data[0].children.forEach((item,index)=>{
-          item.lable="【"+item.code+"】"+item.lable
-        })
+        if(res.data[0].children.length==0){
+        //没有科目
+          this.nosubject=true
+        }else{
+          this.nosubject=false
+          if(!this.xinzeng){
+            this.parentid=res.data[0].children[0].id
+          }
+          res.data[0].children.forEach((item,index)=>{
+            item.lable="【"+item.code+"】"+item.lable
+          })
+          this.tree_data=res.data
+          this.$nextTick(function() {
+            var that=this
+            setTimeout(function() {
+              that.$refs.tree.setCurrentKey(that.parentid)
+              that.xinzeng=false
+            },3000)
 
-        console.log(typeof res.data)
-        this.tree_data=res.data
+          })
+        }
+
+
 
       }).catch(res=>{
         console.log('获取科目失败')
@@ -193,11 +212,11 @@ export default{
     saveedit(){
         this.$refs.editformref.validate(valid=>{
           if(!valid){
-            this.$message.error('请检查格式正确!')
+            // this.$message.error('请检查格式正确!')
             return
           }
-        })
-      this.$http.post('api/Subject/updateInfo',this.subjectform).then(res=>{
+
+      this.$http.post(`${this.base}/api/Subject/updateInfo`,this.subjectform).then(res=>{
          console.log('编辑post返回值')
         console.log(res)
         if(res.data=="Ok"){
@@ -210,6 +229,7 @@ export default{
       }).catch(res=>{
        this.$message.error('保存失败')
       })
+        })
     },
     nullclick(){
     //  点击空白menu不显示
@@ -234,9 +254,9 @@ export default{
     },
     getsubjectinfo(){
        //查询科目信息函数
-       this.$http.get(`api/Subject/getSubject/${this.queryinfo.id}`).then(res=>{
+       this.$http.get(`${this.base}/api/Subject/getSubject/${this.queryinfo.id}`).then(res=>{
          console.log('返回单个')
-         console.log(res)
+         console.log(res.data)
          this.subjectform=res.data
        })
     },
@@ -273,7 +293,7 @@ export default{
     addsamelevel(){
     //  新增同级函数
       this.addsamedialogvisible=true
-      this.addinfo.id=this.queryinfo.id
+      // this.addinfo.id=this.queryinfo.id
     },
     editlevel(){
       //点击编辑事件
@@ -288,19 +308,44 @@ export default{
       this.addsamedialogvisible=false
       this.$refs.addsamelevelref.resetFields()
     //   内容清空
-      this.addinfo={}
+      this.addinfo={
+        subjectName:'',
+        subjectCode:'',
+        subjectPath:'',
+        remark:''
+      }
     },
     addsame(){
+      this.$refs.addsamelevelref.validate(valid=>{
+        if(!valid){
+          return
+        }
     //确认添加同级函数
-      this.$http.post('api/Subject/addSubject',this.addinfo).then(res=>{
-        // console.log('新增返回')
-        this.$message.success('添加同级成功')
-        this.getsubjectList()
-        // console.log(res.data)
-        this.subjectform=res.data
+      this.$http.post(`${this.base}/api/Subject/addSubject`,this.addinfo).then(res=>{
+        console.log('新增返回')
+        console.log(res.data)
+        if(typeof (res.data)=='number'){
+          this.xinzeng=true
+          this.parentid=res.data
+          this.$message.success('添加同级成功')
+            this.getsubjectList()
+            this.queryinfo.id=res.data
+          this.getsubjectinfo()
+
+        }else{
+          // this.$message.error('添加同级失败')
+        }
+        // if(res.data=='OK'){
+        //   this.$message.success('添加同级成功')
+        //   this.getsubjectList()
+        //   // this.subjectform=res.data
+        // }else{
+        //   this.$message.error('添加同级失败')
+        // }
         this.addsamedialogvisible=false
       }).catch(res=>{
         this.$message.error('添加同级失败')
+      })
       })
     },
     quxiao(){
@@ -318,7 +363,7 @@ export default{
         cancelButtonText: '取消',
         type: 'warning'
       }).then(res=>{
-        this.$http.post('api/subject/updateState',{
+        this.$http.post(`${this.base}/api/subject/updateState`,{
           id:this.queryinfo.id,
           subjectState:true
         }).then(res=>{
@@ -343,7 +388,7 @@ export default{
         cancelButtonText: '取消',
         type: 'warning'
       }).then(res=>{
-        this.$http.post('api/subject/updateState',{
+        this.$http.post(`${this.base}/api/subject/updateState`,{
           id:this.queryinfo.id,
           subjectState:false
         }).then(res=>{
@@ -370,14 +415,14 @@ export default{
     position: relative;
   }
 .card_left{
-  width: 25%;
+  width: 20%;
   padding:0px 10px;
   float: left;
-
+  border-right: 1px solid rgb(#EAEDF1);
 }
   .card_right {
-    border-left: 2px solid gray;
-    width: 70%;
+    /*border-left: 1px solid rgb(#C0C4CC);*/
+    width: 75%;
     float: right;
   >.el-form{
     width: 70% !important;
@@ -431,6 +476,9 @@ export default{
   .el-tree{
     overflow-x: hidden;
     overflow-y: scroll;
+  }
+  .addbtn{
+    margin-top: 20px;
   }
 
 </style>

@@ -3,7 +3,20 @@ html,body,#app{
   height:100%;
   margin: 0;
   padding: 0;
-  /*min-width: 1366px;*/
+}
+.el-button--primary{
+  background-color: #303D6F;
+  border-color:#303D6F;
+}
+.el-button--primary:focus, .el-button--primary:hover{
+  background-color: #667195;
+  border-color:#667195;
+}
+.el-pager li.active{
+  color:  #303D6F;
+}
+.el-cascader .el-input .el-input__inner:focus, .el-cascader .el-input.is-focus .el-input__inner{
+  border-color:#667195;
 }
 .el-breadcrumb{
  margin-bottom: 15px;
@@ -22,6 +35,54 @@ html,body,#app{
 .ql-editor{
 /*  富文本编辑器*/
   min-height: 300px;
+}
+.smallspan{
+  color: gray;
+  font-size: 14px;
+}
+.el-checkbox__label{
+  font-size: 18px !important;
+}
+.el-checkbox__inner{
+  width: 20px;
+  height: 20px;
+  text-align: center;
+  line-height: 20px;
+}
+.el-checkbox__inner::after{
+  top: 3px;
+  left: 7px;
+}
+.hgja{
+  width: 120px;
+  height: 35px;
+}
+
+.el-table .success-row {
+  background-color:rgba(160,207,255,.1);
+}
+
+.addformclas1 .el-form-item__label{
+ font-weight: bold;
+}
+
+.elltable td, .elltable th.is-leaf{
+  border: none;
+}
+
+.el-cascader-menu__wrap{
+
+  height: auto;
+  max-height: 400px;
+}
+.el-checkbox__input.is-checked .el-checkbox__inner, .el-checkbox__input.is-indeterminate .el-checkbox__inner {
+  background-color: #303d6f;
+  border-color: #303d6f;
+}
+.el-button--primary.is-disabled, .el-button--primary.is-disabled:active, .el-button--primary.is-disabled:focus, .el-button--primary.is-disabled:hover{
+  color: #FFF;
+  background-color: #667195;
+  border-color:#667195
 }
 
 

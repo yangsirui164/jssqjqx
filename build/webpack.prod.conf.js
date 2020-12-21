@@ -10,8 +10,18 @@ const HtmlWebpackPlugin = require('html-webpack-plugin')
 const ExtractTextPlugin = require('extract-text-webpack-plugin')
 const OptimizeCSSPlugin = require('optimize-css-assets-webpack-plugin')
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
-
+//ip地址配置
+// const GenerateAssetPlugin = require('generate-asset-webpack-plugin')
 const env = require('../config/prod.env')
+
+//ip地址配置
+// const createServerConfig = function(compilation) {
+//   let serverConfig={baseUrl:'http://192.168.1.15:8005',
+//     // baseUrl2:'http://192.168.1.15:8003'
+//   };
+//   return JSON.stringify(serverConfig);
+// }
+
 
 const webpackConfig = merge(baseWebpackConfig, {
   module: {
@@ -41,12 +51,20 @@ const webpackConfig = merge(baseWebpackConfig, {
       sourceMap: config.build.productionSourceMap,
       parallel: true
     }),
+    //ip地址配置
+    // new GenerateAssetPlugin({
+    //   filename: 'serverconfig.json',
+    //   fn: (compilation, cb) => {
+    //     cb(null, createServerConfig(compilation))
+    //   },
+    //   extraFiles: []
+    // }),
     // extract css into its own file
     new ExtractTextPlugin({
       filename: utils.assetsPath('css/[name].[contenthash].css'),
       // Setting the following option to `false` will not extract CSS from codesplit chunks.
       // Their CSS will instead be inserted dynamically with style-loader when the codesplit chunk has been loaded by webpack.
-      // It's currently set to `true` because we are seeing that sourcemaps are included in the codesplit bundle as well when it's `false`, 
+      // It's currently set to `true` because we are seeing that sourcemaps are included in the codesplit bundle as well when it's `false`,
       // increasing file size: https://github.com/vuejs-templates/webpack/issues/1110
       allChunks: true,
     }),

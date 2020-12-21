@@ -1,17 +1,12 @@
 <template>
   <div @click="nullclick">
-    <el-breadcrumb separator="/">
-      <el-breadcrumb-item :to="{ path: '/home' }">首页</el-breadcrumb-item>
-      <el-breadcrumb-item>科目管理</el-breadcrumb-item>
-      <el-breadcrumb-item>单项管理</el-breadcrumb-item>
-
-    </el-breadcrumb>
-    <el-card>
+    <el-card class="bigelcard">
       <div class="card_left">
         <el-input placeholder="请输入" v-model="filterText">
           <i slot="suffix" class="el-input__icon el-icon-search"></i>
         </el-input>
         <el-tree
+          default-expand-all
           class="filter-tree"
           :data="tree_data"
           :props="defaultProps"
@@ -28,11 +23,11 @@
       <div class="card_right">
         <el-row>
           <el-col class="header" :span="9">
-            <span class="smalfon">单项编码:</span>
+            <span class="smallspan">单项编码:</span>
             <el-input placeholder="请输入" v-model="queryinfo.value2" clearable></el-input>
           </el-col>
           <el-col class="header" :span="9">
-            <span class="smalfon">单项名称：</span>
+            <span class="smallspan">单项名称：</span>
             <el-input placeholder="请输入" v-model="queryinfo.value3" clearable></el-input>
           </el-col>
           <el-col  :span="6">
@@ -42,14 +37,13 @@
         </el-row>
         <el-row>
           <el-col class="ghh">
-            <el-button type="primary"  @click="addialogvisible=true" size="mini" v-if="isadd">
+            <el-button type="primary"  @click="showadddialog" size="mini" v-if="isadd">
               <i class="el-icon-plus el-icon--left" ></i>
               新增</el-button>
             <el-button type="primary" size="mini" :disabled="isedit" @click="editlevel">
               <i class="el-icon-edit el-icon--left"></i>
               编辑</el-button>
             <div class="block">
-
               <el-cascader
                 placeholder="快速操作"
                 v-model="cascadervalue"
@@ -68,10 +62,13 @@
           @selection-change="handleSelectionChange"
           :row-key="getRowKeys"
           ref="buyerTable"
+          :row-class-name="tableRowClassName"
         >
           <el-table-column type="selection"
                            :reserve-selection="true"
           ></el-table-column>
+
+
           <el-table-column
             prop="singelCode"
             label="单项编码"
@@ -83,7 +80,7 @@
           >
           </el-table-column>
           <el-table-column
-            prop="createUser"
+            prop="userName"
             label="创建人">
           </el-table-column>
           <el-table-column
@@ -92,7 +89,7 @@
           </el-table-column>
           <el-table-column
             prop="remark"
-            label="课程说明">
+            label="单项说明">
           </el-table-column>
           <el-table-column
             prop="singelState"
@@ -111,6 +108,13 @@
                   </span>停用</span>
             </template>
           </el-table-column>
+          <el-table-column width="190px"
+                           label="操作">
+            <template slot-scope="scope">
+              <span @click="showzidanxiang(scope.row.id)"
+                    v-show="scope.row.isFather">添加子单项</span>
+            </template>
+          </el-table-column>
 
         </el-table>
 
@@ -118,7 +122,7 @@
           @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
           :current-page="queryinfo.pagenum"
-          :page-sizes="[1, 2, 5, 10]"
+          :page-sizes="[10,15,20]"
           :page-size="queryinfo.pagesize"
           layout="total,sizes, prev, pager, next, jumper"
           :total="total">
@@ -192,6 +196,7 @@
   export default{
     data(){
       return{
+        xzyijiid:'',
         iskuaisu:true,
         editform1:{
           courseId:'',
@@ -199,10 +204,14 @@
           singelName:'',
           remark:''
         },
+        xinzengarea:'',
         isadd:false,
         editalogvisible:false,
         sels:[],
         getRowKeys(row){
+          return row.id
+        },
+        getRowKeys1(row){
           return row.id
         },
         singleform:{},
@@ -226,7 +235,7 @@
           //当前页码值
           pagenum:1,
           //每页显示条数
-          pagesize:2
+          pagesize:10
         },
         ismenu:false,
         singleform:{
@@ -241,21 +250,21 @@
         addsamerules:{
           singelCode:[
             { required: true, message: '请输入单项编码', trigger: 'blur' },
-            { min: 2, max: 9, message: '长度在 2 到 9 个字符', trigger: 'blur' }
+            // { min: 2, max: 20, message: '长度在 2 到 20 个字符', trigger: 'blur' }
           ],
           singelName:[
             { required: true, message: '请输入单项名称', trigger: 'blur' },
-            { min: 2, max: 9, message: '长度在 2 到 9 个字符', trigger: 'blur' }
+            // { min: 2, max: 20, message: '长度在 2 到 20 个字符', trigger: 'blur' }
           ]
         },
         editformrules:{
           singelCode:[
             { required: true, message: '请输入单项编码', trigger: 'blur' },
-            { min: 3, max: 9, message: '长度在 3 到 9 个字符', trigger: 'blur' }
+            // { min: 2, max: 20, message: '长度在 2 到 20 个字符', trigger: 'blur' }
           ],
           singelName:[
             { required: true, message: '请输入单项名称', trigger: 'blur' },
-            { min: 3, max: 9, message: '长度在 3 到 9 个字符', trigger: 'blur' }
+            // { min: 2, max: 20, message: '长度在 2 到 20 个字符', trigger: 'blur' }
           ]
         },
         isedit:true,
@@ -268,10 +277,11 @@
         tree_data:[],
         loginnanme:'',
         cascadervalue:[],
-        options:[{
-          value: '0',
-          label: '批量删除'
-        },
+        options:[
+        //   {
+        //   value: '0',
+        //   label: '批量删除'
+        // },
           {
             value: '1',
             label: '批量启动'
@@ -281,7 +291,8 @@
             label: '批量停用'
           }
 
-        ]
+        ],
+        base:''
       }
     },
     watch:{
@@ -330,6 +341,7 @@
       }
     },
     created(){
+      this.base=this.BASE_URL
       const struserid=window.sessionStorage.getItem('loginid')
       this.addinfo.createUser=Number(struserid)
       this.getsubjectList()
@@ -342,15 +354,28 @@
 
       })
     },
-    // mounted(){
-    //   this.$nextTick(function(){
-    //     this.$refs['tree'].setCurrentKey(0);
-    //   })
-    // },
     methods:{
+      tableRowClassName({row, rowIndex}) {
+        if (row.isFather) {
+          return 'success-row';
+        } else {
+          return '';
+        }
+
+      },
+      showadddialog(){
+        this.xinzengarea='fu'
+        this.addialogvisible=true
+      },
+      showzidanxiang(rowid){
+       this.xinzengarea='zi'
+        //设置新增子单项的一级id
+        this.xzyijiid=rowid
+        this.addialogvisible=true
+      },
       piliangdelete(){
         //  点击了批量删除
-        this.$http.post('api/Singel/delSingels',this.sels).then(res=>{
+        this.$http.post(`${this.base}/api/Singel/delSingels`,this.sels).then(res=>{
           console.log('批量删除返回')
           console.log(res.data)
           if(res.data=='OK'){
@@ -375,8 +400,7 @@
         this.sels=val.map(function(item) {
           return item.id
         })
-        // console.log("this.sels")
-        // console.log(this.sels)
+
       },
       resetquery(){
         //重置
@@ -384,7 +408,8 @@
         this.queryinfo.value3=''
         this.queryinfo.pagenum=1
         this.getsubjectinfo()
-
+        this.sels=[]
+        this.clearSelection()
 
       },
       handleChange(val){
@@ -392,7 +417,7 @@
 
         //下拉框
         const warningtext=warningarr[val]
-        this.$confirm(`将要批量${warningtext},是否继续？`,'提示',{
+        this.$confirm(`将要批量${warningtext}单项,是否继续？`,'提示',{
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'warning'
@@ -421,7 +446,7 @@
         )
       },
       editUserInfo(){
-        this.$http.post('api/Singel/updateInfo',this.editform1).then(
+        this.$http.post(`${this.base}/api/Singel/updateInfo`,this.editform1).then(
           res=>{
             console.log('更新返回')
             console.log(res.data)
@@ -449,7 +474,7 @@
       },
       openstates(){
         //批量启用
-        this.$http.post('api/Singel/updateStates/true',this.sels).then(res=>{
+        this.$http.post(`${this.base}/api/Singel/updateStates/true`,this.sels).then(res=>{
           console.log('批量启动返回')
           console.log(res.data)
           if(res.data=='Ok'){
@@ -467,7 +492,7 @@
       },
       closestates(){
         //批量停用
-        this.$http.post('api/Singel/updateStates/false',this.sels).then(res=>{
+        this.$http.post(`${this.base}/api/Singel/updateStates/false`,this.sels).then(res=>{
 
           if(res.data=='Ok'){
             this.$message.success('批量停用成功')
@@ -491,18 +516,21 @@
         return data.lable.indexOf(value) !== -1;
       },
       dianji(object,value,element){
-        console.log(value.level)
         if(value.level==1){
-          // console.log('等于1')
-          // 获取全部课程
+          console.log('点击一级')
+          this.isadd=false
           this.queryinfo.value1=0
           this.addinfo.courseId=0
           this.getsubjectinfo()
 
         }
+        if(value.level==2){
+          console.log('点击2级')
+        this.isadd=false
+        }
         if(value.level==3){
-          // console.log('等于2')
-          //  获取相应科目课程
+          this.isadd=true
+         console.log('点击三级')
           this.queryinfo.value1=value.data.id
           this.addinfo.courseId=value.data.id
           this.getsubjectinfo()
@@ -519,8 +547,7 @@
       getsubjectinfo(){
         //查询表信息
         console.log(this.queryinfo)
-
-        this.$http.post('api/Singel/getSingelByPage',this.queryinfo)
+        this.$http.post(`${this.base}/api/Singel/getSingelByPage`,this.queryinfo)
           .then(res=>{
             console.log('获取到table信息')
             console.log(res.data)
@@ -541,7 +568,7 @@
         // console.log(this.sels[0])
         //获取编辑信息的id
         this.editform1.courseId=this.sels[0]
-        this.$http.get(`api/Singel/getSingel/${this.sels[0]}`).then(res=>{
+        this.$http.get(`${this.base}/api/Singel/getSingel/${this.sels[0]}`).then(res=>{
 
           console.log('获取单项信息')
           console.log(res.data)
@@ -557,6 +584,7 @@
       },
       addsamedialogclosed(){
         //  取消新增同级函数
+        this.xinzengarea=''
         this.addialogvisible=false
         this.$refs.addsamelevelref.resetFields()
 
@@ -567,22 +595,38 @@
           if(!valid){
             return
           }
-          this.$http.post('api/Singel/addSingel',this.addinfo).then(res=>{
-            console.log('新增返回')
-            console.log(res.data)
-            if(res.data=="OK"){
-              this.$message.success('添加课程成功')
-              this.getsubjectinfo()
-              this.addialogvisible=false
+          //添加的是1级单项还是2级单项
+          if(this.xinzengarea=='fu'){
 
-            }else{
-              this.$message.error('添加课程失败')
-            }
+            this.$http.post(`${this.base}/api/Singel/addSingel`,this.addinfo).then(res=>{
+              console.log('新增返回')
+              console.log(res.data)
+              if(res.data=="OK"){
+                this.$message.success('添加单项成功')
+                this.getsubjectinfo()
+                this.addialogvisible=false
 
-          }).catch(res=>{
-            console.log('添加课程失败')
-            console.log(res)
-          })
+              }else{
+                this.$message.error('添加单项失败')
+              }
+
+            }).catch(res=>{
+              console.log('添加单项失败')
+              console.log(res)
+            })
+          }else if(this.xinzengarea=='zi'){
+            this.addinfo.courseId=0
+           this.$http.post(`${this.base}/api/Singel/addSingelSon/${this.xzyijiid}`,this.addinfo).then(res=>{
+             if(res.data=='OK'){
+               this.getsubjectinfo()
+              this.$message.success('添加子单项成功')
+               this.addialogvisible=false
+             }
+           }).catch(res=>{
+             console.log('添加子单项失败')
+           })
+          }
+
         })
 
       },
@@ -592,13 +636,11 @@
 
       },
       startedit(){
-        //  启用
       },
       stopedit(){
-        //  停用
       },
       getsubjectList(){
-        this.$http.get('api/Course/getCourseLst').then(res=>{
+        this.$http.get(`${this.base}/api/Course/getCourseLstByState`).then(res=>{
           console.log('返回列表')
           console.log(res.data)
           this.parentid=res.data[0].id
@@ -621,13 +663,13 @@
     position: relative;
   }
   .card_left{
-    width: 25%;
+    width: 20%;
     padding:0px 10px;
     float: left;
-    border-right: 2px solid gray;
+    border-right:1px solid rgb(#EAEDF1);
   }
   .card_right {
-    width: 70%;
+    width: 75%;
     float: left;
     margin-left: 20px;
     >.el-form{
@@ -636,7 +678,7 @@
   }
   .el-card{
     overflow: hidden;
-
+    height: 400px;
   }
 
   .statusinpu{
@@ -696,5 +738,13 @@
     height: 30px;
     line-height:  30px;
   }
+  .bigelcard{
+    height: 100%;
+    padding-bottom: 50px;
+  }
 
+  .cell span{
+    color: blue;
+    cursor: pointer;
+  }
 </style>

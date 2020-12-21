@@ -1,16 +1,10 @@
 <template>
-  <div>
-    <el-breadcrumb separator="/">
-      <el-breadcrumb-item :to="{ path: '/home' }">首页</el-breadcrumb-item>
-      <el-breadcrumb-item>课件资源管理</el-breadcrumb-item>
-      <el-breadcrumb-item>资源管理</el-breadcrumb-item>
-
-    </el-breadcrumb>
+  <div class="mingh1">
     <el-card>
       <el-row :gutter="21">
         <el-col :span="6">
           <!--  clearable可清空-->
-          <span>标题:</span>
+          <span class="smallspan">标题:</span>
           <el-input placeholder="请输入" v-model="queryInfo.value1"
                     class="singleel_input"
                     size="mini"
@@ -18,7 +12,7 @@
 
         </el-col>
         <el-col :span="6">
-          <span>创建时间:</span>
+          <span class="smallspan">创建时间:</span>
           <el-date-picker
             size="mini"
             v-model="queryInfo.value2"
@@ -29,12 +23,15 @@
           >
           </el-date-picker>
         </el-col>
-        <el-col :span="6">
-          <span>模块:</span>
-          <select v-model="queryInfo.value3">
+        <el-col :span="4">
+          <span class="smallspan">科目:</span>
+          <select v-model="queryInfo.value3" class="sles">
             <option disabled value="">请选择</option>
-            <option value="0">426电源车</option>
-            <option value="1">30电源车</option>
+            <option :value="item.id" v-for="(item,index) in subjectarr"
+                    :key="item.id">
+              {{item.lable}}
+            </option>
+
           </select>
         </el-col>
         <el-col :span="6">
@@ -55,6 +52,9 @@
         <el-button @click="piliangpush"
                    :disabled="this.sels.length === 0"
                    size="mini">批量发布</el-button>
+        <el-button @click="piliangpull"
+                   :disabled="this.sels.length === 0"
+                   size="mini">批量撤回发布</el-button>
       </el-row>
       <!--          用户table-->
       <el-table
@@ -82,22 +82,22 @@
         >
         </el-table-column>
         <el-table-column
-          prop="type"
+          prop="typeTxt"
           label="类型"
         >
         </el-table-column>
         <el-table-column
-          prop="module"
-          label="模块"
+          prop="subjectName"
+          label="科目"
         >
         </el-table-column>
 
         <el-table-column
-          prop="pushman"
+          prop="publishUserName"
           label="发布人">
         </el-table-column>
         <el-table-column
-          prop="pushTime"
+          prop="publishDate"
           label="发布时间"
 
         >
@@ -125,8 +125,8 @@
             <span @click="showeditdialog(scope.row.id)">编辑</span>
             <span>|</span>
             <span @click="removeUserbyid(scope.row.id)">删除</span>
-<!--            <span>|</span>-->
-<!--            <span @click="removeUserbyid(scope.row.id)">查看</span>-->
+            <!--            <span>|</span>-->
+            <!--            <span @click="removeUserbyid(scope.row.id)">查看</span>-->
 
           </template>
         </el-table-column>
@@ -138,134 +138,13 @@
         @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
         :current-page="queryInfo.pagenum"
-        :page-sizes="[1, 2, 5, 10]"
+        :page-sizes="[10,15,20]"
         :page-size="queryInfo.pagesize"
         layout="total,sizes, prev, pager, next, jumper"
         :total="total">
       </el-pagination>
 
     </el-card>
-
-
-
-
-    <!--编辑用户-->
-    <el-dialog
-      title="编辑资源"
-      :visible.sync="editalogvisible"
-      width="60%"
-      @close="editdialogclosed"
-      class="addformclas"
-    >
-      <el-form  :model="editform1" label-width="70px" :rules="editformrules"
-                ref="editformref"
-      >
-
-        <el-form-item label="标题:" prop="title" label-width="115px">
-          <el-input v-model="addform.title" size="mini" class="smal"></el-input>
-        </el-form-item>
-
-
-        <el-form-item label="类型:"
-                      prop="type"
-                      label-width="115px"
-        >
-          <select v-model="addform.type">
-            <option disabled value="">请选择</option>
-            <option value="0">
-              文本文件
-            </option>
-            <option value="1">
-              视频文件
-            </option>
-          </select>
-        </el-form-item>
-        <el-form-item label="模块:" prop="module" label-width="115px">
-          <select v-model="addform.module">
-            <option disabled value="">请选择</option>
-            <option value="0">
-              426电源车
-            </option>
-            <option value="1">
-              30电源车
-            </option>
-          </select>
-        </el-form-item>
-        <el-form-item label="作者:" prop="author" label-width="115px">
-          <el-input v-model="addform.author" size="mini" class="smal"></el-input>
-        </el-form-item>
-        <el-form-item label="内容:" prop="content" label-width="115px">
-          <quill-editor
-            v-model="addform.content"
-          ></quill-editor>
-        </el-form-item>
-        <el-form-item label="上传封面图:" prop="fengmianpic" label-width="115px">
-          <el-upload
-            action="http://192.168.1.15:8002/api/Home/uploads"
-            list-type="picture-card"
-            :on-preview="handlePictureCardPreview"
-            accept=".png,.jpeg,.jpg"
-            :on-remove="handleRemove2"
-            :on-success="avatorsuccess"
-            :limit="1"
-            name="files"
-            id="slj">
-            <i class="el-icon-plus"></i>
-          </el-upload>
-
-          <el-dialog :visible.sync="dialogVisible">
-            <img width="100%" :src="dialogImageUrl" alt="">
-          </el-dialog>
-        </el-form-item>
-
-
-        <!--        上传文件-->
-        <el-form-item label="上传文件:" prop="upload" label-width="115px" v-if="wenben">
-
-          <el-upload
-            action="http://192.168.1.15:8002/api/Home/uploads"
-            :on-success="handlesuccess"
-            :on-preview="handlePreview"
-            :on-remove="handleRemove"
-            :before-upload="beforeUpload"
-            list-type="text"
-            multiple
-            ref="upload"
-            accept=".xls,.xlsx,.png,.jpeg,.jpg,.rar,.zip,.doc,.docx,.pdf"
-            name="files"
-          >
-            <el-button size="small" type="primary">点击上传</el-button>
-            <div slot="tip" class="el-upload__tip">（1）支持多文件上传,扩展名:.rar.zip.doc.docx.pdf.jpg...</div>
-            <div slot="tip" class="el-upload__tip">（2）单文件不能超过100M</div>
-          </el-upload>
-        </el-form-item>
-        <!--上传视频-->
-        <el-form-item label="上传视频:" prop="upload" label-width="115px" v-if="!wenben">
-
-          <el-upload
-            action="http://192.168.1.15:8002/api/Home/uploads"
-            :on-success="handlesuccess"
-            :on-preview="handlePreview"
-            :on-remove="handleRemove"
-            :before-upload="beforeUpload"
-            list-type="text"
-            multiple
-            ref="upload"
-            accept=".mp4"
-            name="files"
-          >
-            <el-button size="small" type="primary">点击上传</el-button>
-            <div slot="tip" class="el-upload__tip">（1）支持多文件上传,扩展名:.mp4..</div>
-            <div slot="tip" class="el-upload__tip">（2）单文件不能超过100M</div>
-          </el-upload>
-        </el-form-item>
-      </el-form>
-      <span slot="footer" class="dialog-footer">
-    <el-button @click="editalogvisible = false">取 消</el-button>
-    <el-button type="primary" @click="editUserInfo">确 定</el-button>
-  </span>
-    </el-dialog>
-
 
 
   </div>
@@ -354,6 +233,7 @@
           label:'lable',
           value:'id'
         },
+        subjectarr:[],
         mokuaiProps:{
 
         },
@@ -370,6 +250,7 @@
           pics:[]
 
         },
+        base:'',
 
         datepicker:'',
         options2:[
@@ -399,7 +280,7 @@
           //当前页码值
           pagenum:1,
           //每页显示条数
-          pagesize:2
+          pagesize:10
         },
         queryInfo2:{
           username:'',
@@ -485,6 +366,7 @@
 
         },
         checkList2:[],
+        loginid:'',
         editformrules:{
           realName:[
             { required: true, message: '请输入姓名', trigger: 'blur' },
@@ -551,12 +433,59 @@
       }
     },
     created() {
-      //分页查询
-      this.getUserlist()
+      this.base=this.BASE_URL
       //  获取所有科目
       this.getsubjectList()
+      //分页查询
+      this.getUserlist()
+
+      //   const that=this
+      //   setTimeout(function(){
+      // that.loginid=parseInt(window.sessionStorage.getItem('loginid'))
+      //
+      //
+      //   },2111)
+      this.loginid=parseInt(window.sessionStorage.getItem('loginid'))
     },
     methods:{
+      getsubjectList(){
+        this.$http.get(`${this.base}/api/Subject/getAllSubject`).then(res=>{
+          console.log('返回列表')
+          console.log(res.data)
+          this.subjectarr=res.data[0].children
+
+        }).catch(res=>{
+          console.log('获取科目失败')
+        })
+      },
+      piliangpull(){
+        this.$confirm('此操作将发布资源,是否继续？','提示',{
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(()=>{
+          this.$http.post(`${this.base}/api/Resource/updateStates/${this.loginid}/false`,this.sels).then(res=>{
+            console.log('批量撤回返回')
+            console.log(res.data)
+            if(res.data=='Ok'){
+              this.$message.success('批量撤回成功')
+              this.sels=[]
+              this.clearSelection()
+              this.getUserlist()
+            }else{
+              this.sels=[]
+              this.clearSelection()
+              this.$message.error('批量撤回失败')
+            }
+          }).catch(res=>{
+            this.sels=[]
+            this.clearSelection()
+            console.log('批量撤回失败')
+          })
+        }).catch(() => {
+        });
+
+      },
       avatorsuccess(res){
         this.ediform1.pics.push(res)
       },
@@ -600,7 +529,7 @@
       },
       openstates(){
         //批量启用
-        this.$http.post('api/Teacher/updateStates/true',this.sels).then(res=>{
+        this.$http.post(`${this.base}/api/Teacher/updateStates/true`,this.sels).then(res=>{
 
           if(res.data=='Ok'){
             this.$message.success('批量启动成功')
@@ -620,41 +549,68 @@
       },
       piliangdelete(){
         //  点击了批量删除
-        this.$http.post('api/course/delcourses/',this.sels).then(res=>{
-          console.log('批量删除返回')
-          console.log(res.data)
-          if(res.data=='OK'){
-            this.$message.success('批量删除成功')
-            this.getsubjectinfo()
-          }else{
-            this.$message.error('批量删除失败')
-          }
-        }).catch(res=>{
-          console.log('批量删除失败')
-        })
-        this.sels=[]
-        this.clearSelection()
+        this.$confirm('此操作将删除资源,是否继续？','提示',{
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(()=>{
+          this.$http.post(`${this.base}/api/Resource/delResources`,this.sels).then(res=>{
+            console.log('批量删除返回')
+            console.log(res.data)
+            if(res.data=='OK'){
+              this.$message.success('批量删除成功')
+              this.sels=[]
+              this.clearSelection()
+              this.getUserlist()
+            }else{
+              this.sels=[]
+              this.clearSelection()
+              this.$message.error('批量删除失败')
+            }
+          }).catch(res=>{
+            this.sels=[]
+            this.clearSelection()
+            console.log('批量删除失败')
+          })
+        }).catch(() => {
+        });
+
+
       },
       piliangpush(){
-      //  批量发布
-        this.$http.post('api/course/delcourses/',this.sels).then(res=>{
-          console.log('批量发布返回')
-          console.log(res.data)
-          if(res.data=='OK'){
-            this.$message.success('批量发布成功')
-            this.getsubjectinfo()
-          }else{
-            this.$message.error('批量发布失败')
-          }
-        }).catch(res=>{
-          console.log('发布失败')
-        })
-        this.sels=[]
-        this.clearSelection()
+
+
+        //  批量发布
+        this.$confirm('此操作将发布资源,是否继续？','提示',{
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(()=>{
+          this.$http.post(`${this.base}/api/Resource/updateStates/${this.loginid}/true`,this.sels).then(res=>{
+            console.log('批量发布返回')
+            console.log(res.data)
+            if(res.data=='Ok'){
+              this.$message.success('批量发布成功')
+              this.sels=[]
+              this.clearSelection()
+              this.getUserlist()
+            }else{
+              this.sels=[]
+              this.clearSelection()
+              this.$message.error('批量发布失败')
+            }
+          }).catch(res=>{
+            this.sels=[]
+            this.clearSelection()
+            console.log('批量删除失败')
+          })
+        }).catch(() => {
+        });
+
       },
       closestates(){
         //批量停用
-        this.$http.post('api/Teacher/updateStates/false',this.sels).then(res=>{
+        this.$http.post(`${this.base}/api/Teacher/updateStates/false`,this.sels).then(res=>{
 
           if(res.data=='Ok'){
             this.$message.success('批量停用成功')
@@ -668,30 +624,19 @@
         this.sels=[]
         this.clearSelection()
       },
-      getsubjectList(){
-        this.$http.get('api/Subject/getAllSubject').then(res=>{
-          console.log('获取所有科目')
-          console.log(res.data)
-          this.options=res.data[0].children
-        }).catch(res=>{
-          console.log("获取所有科目失败")
-        })
-      },
       chaxun(){
         this.queryInfo.pagenum=1
         this.getUserlist()
 
       },
       getUserlist(){
-        // console.log('我给的')
-        // console.log(this.queryInfo)
-        this.$http.post('api/Teacher/getTeacherByPage',this.queryInfo).then(res=>{
+        this.$http.post(`${this.base}/api/Resource/getResourceByPage`,this.queryInfo).then(res=>{
           console.log('获取table信息')
           console.log(res.data)
           this.userlist=res.data.data
           this.total=res.data.total
         }).catch(res=>{
-          console.log("获取教师列表失败")
+          console.log("获取table失败")
         })
 
       },
@@ -710,15 +655,7 @@
         this.queryInfo.pagenum=val
         this.getUserlist()
       },
-      async userstatuschanged(changgestate){
-        //修改后传递数据   用put请求
-        const {data:res}=await this.$http.put(`users/${changgestate.id}/state/${changgestate.mg_state}`)
-        if(res.meta.status!==200){
-          changgestate.mg_state=!changgestate.mg_state
-          return this.$message.error('更新用户状态失败')
-        }
 
-      },
       //添加对话框关闭事件
       addialogclose(){
         this.$refs.addFormRef.resetFields()
@@ -733,7 +670,7 @@
             this.$message.error('请检查密码格式!')
             return
           }
-          this.$http.post('api/User/updatePassword',{
+          this.$http.post(`${this.base}/api/User/updatePassword`,{
             id:this.editform.id,
             password:this.passwordform.password2
           }).then(res=>{
@@ -754,21 +691,13 @@
       showeditdialog(id){
         //编辑信息页面展示
         this.editform1.id=id
-        this.$http.get(`api/Teacher/getTeacher/${id}`).then(res=>{
-          console.log('获取单个信息')
-          console.log(res.data)
-          //赋值文件数组
-          this.editform1.pics=res.data.pics
-          this.editform1=res.data
-          this.subectteacher2=res.data.subjectIdArr
-          this.editalogvisible=true
-
-
-
-        }).catch(res=>{
-
-          console.log('错了')
+        this.$router.push({
+          path:'/addsource',
+          query:{
+            item:id
+          }
         })
+
 
       },
       showpassworddialog(id){
@@ -811,7 +740,7 @@
           console.log('我给的editform')
           console.log(this.editform1)
           // console.log(this.checkList2)
-          this.$http.post('api/Teacher/updateInfo',this.editform1).then(res=>{
+          this.$http.post(`${this.base}/api/Teacher/updateInfo`,this.editform1).then(res=>{
             if(res.data=="Ok"){
               this.$message.success('修改成功')
               this.editalogvisible=false
@@ -837,9 +766,11 @@
           cancelButtonText: '取消',
           type: 'warning'
         }).then(() => {
-          this.$http.get(`api/Source/delSource/${id}`).then(
+          this.$http.get(`${this.base}/api/Resource/delResource/${id}`).then(
+
             res=>{
-              if(res.data=="OK"){
+              console.log(res.data)
+              if(res.data=="Ok"){
                 this.$message.success('删除成功')
                 this.getUserlist()
               }
@@ -848,10 +779,7 @@
             console.log('删除资源失败')
           })
         }).catch(() => {
-          // this.$message({
-          //   type: 'info',
-          //   message: '已取消删除'
-          // });
+
         });
       },
 
@@ -861,7 +789,7 @@
           cancelButtonText:'取消',
           type:'warning'
         }).then(()=>{
-            this.$http.post('api/user/delusers',this.sels).then(res=>{
+            this.$http.post(`${this.base}/api/user/delusers`,this.sels).then(res=>{
               console.log('删除成功 ')
               //重置空数组
               this.sels=[]
@@ -884,36 +812,7 @@
 
         )
       },
-      async setrole(info){
-        this.setrolelogvisible=true
-        //获取所有角色列表
-        const {data:res}=await this.$http.get('roles')
-        if(res.meta.status!=200){
-          return this.$message.error('获取角色列表失败')
-        }
-        this.roleslist=res.data
-        this.userinfo=info
 
-      },
-      //点击按钮分配角色
-      async saveroleinfo(){
-        //判断选择没选择
-        if(!this.selectedroleid){
-          return this.$message.error('请选择要分配的角色')
-        }
-        // console.log(this.userinfo.id);
-        // console.log(this.selectedroleid)
-        const {data:res}= await this.$http.put(`users/${this.userinfo.id}/role`,{
-          rid:this.selectedroleid
-        })
-        if(res.meta.status!=200){
-
-          return this.$message.error('更新角色失败')
-        }
-        this.getUserlist()
-        this.setrolelogvisible=false
-
-      },
       setroledialog(){
         this.selectedroleid=""
         this.userinfo={
@@ -922,8 +821,7 @@
       },
       async getsmallUserlist(){
         // 查询框函数
-        const {data:res}=await this.$http.get('queryusers',{params:this.queryInfo2})
-        // console.log(res)
+
         if(res.meta.status!=200){
           return this.$message.error('未查询到该用户')
         }
@@ -965,7 +863,7 @@
       xinzeng(){
         // this.addialogvisible=true
         // this.addform.pics=[]
-      this.$router.push('/addsource')
+        this.$router.push('/addsource')
       },
       handlesuccess(res,file,filelist){
         //  上传成功
@@ -1056,6 +954,20 @@
   }
   .ctratetime{
     width: 105px !important;
+  }
+  .sles{
+    width: 100px;
+    height: 30px;
+    border-radius: 3px;
+    border: 1px solid rgb(195,199,218);
+    font-size: 12px;
+    outline: none;
+  }
+  .singleel_input{
+    width: 135px !important;
+  }
+  .mingh1{
+    min-width: 840px;
   }
 
 </style>
