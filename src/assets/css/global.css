@@ -4,14 +4,7 @@ html,body,#app{
   margin: 0;
   padding: 0;
 }
-.el-button--primary{
-  background-color: #303D6F;
-  border-color:#303D6F;
-}
-.el-button--primary:focus, .el-button--primary:hover{
-  background-color: #667195;
-  border-color:#667195;
-}
+
 .el-pager li.active{
   color:  #303D6F;
 }
@@ -76,13 +69,85 @@ html,body,#app{
   max-height: 400px;
 }
 .el-checkbox__input.is-checked .el-checkbox__inner, .el-checkbox__input.is-indeterminate .el-checkbox__inner {
-  background-color: #303d6f;
-  border-color: #303d6f;
+  /*background-color: #303d6f;*/
+  /*border-color: #303d6f;*/
 }
 .el-button--primary.is-disabled, .el-button--primary.is-disabled:active, .el-button--primary.is-disabled:focus, .el-button--primary.is-disabled:hover{
-  color: #FFF;
-  background-color: #667195;
-  border-color:#667195
+  /*color: #FFF;*/
+  /*background-color: #667195;*/
+  /*border-color:#667195*/
+}
+.swiper_box .el-carousel__container{
+  height: 100%;
+}
+.el-card__body{
+  height: 100%;
+  padding: 0;
+}
+.el-tree--highlight-current .el-tree-node.is-current>.el-tree-node__content{
+  background: rgba(206, 209, 212,.3);
+}
+.smallbao .el-input__inner{
+
+  background: rgb(18, 45, 66);
+  color: white;
+}
+
+.filter-tree .el-tree-node{
+  border-bottom: 1px solid rgba(206, 209, 212,.3);
+  /*height: 34px;*/
+  line-height: 40px;
+}
+.filter-tree  .el-tree-node__content{
+  height: 34px;
+}
+.el-checkbox__inner{
+  background: none;
+}
+.el-tree-node__content:hover{
+  background: none;
+}
+.el-tree-node:focus>.el-tree-node__content {
+  background: none;
+}
+.custom-tree-node{
+  width: 100%;
+  overflow: hidden;
+  line-height: 34px;
+  display: flex;
+  align-items: center;
+}
+.el-input.is-disabled .el-input__inner{
+  background: none;
+}
+.el-upload--picture-card{
+  width: 80px;
+  height: 80px;
+  line-height: 83px;
+
+}
+.el-upload-list--picture-card .el-upload-list__item{
+  width: 80px;
+  height: 80px;
+}
+
+.swiper-button-prev{
+  background: url("../leftbtn.png") !important;
+
+  left:0px !important;
+}
+.swiper-button-next{
+  background: url("../rightbtn.png") !important;
+
+  right:0px !important;
+}
+.swiper-button-next, .swiper-button-prev{
+  width: 50px !important;
+  height: 105px !important;
+  background-size: 100% 100% !important;
+}
+.el-header{
+  height: 48px !important;
 }
 
 

@@ -49,6 +49,8 @@ Vue.use(VueQuillEditor)
 
 
 
+import 'swiper/dist/css/swiper.min.css'
+import 'swiper/dist/js/swiper.min'
 
 axios.interceptors.request.use( config=>{
   console.log(config);

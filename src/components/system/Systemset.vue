@@ -4,7 +4,7 @@
     <el-card>
       <div class="card_left">
         <el-input placeholder="请输入" v-model="filterText">
-          <i slot="suffix" class="el-input__icon el-icon-search"></i>
+          <i slot="suffix" class="el-input__icon el-icon-delete"></i>
         </el-input>
         <el-tree
           class="filter-tree"
